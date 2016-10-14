@@ -41,6 +41,6 @@
     "supertest": "~2.0.0",
     "supertest-as-promised": "~4.0.0",
     "tap": "~7.1.2",
-    "tapdate": "~1.0.0"
+    "tapdate": "~1.0.1"
   }
 }
