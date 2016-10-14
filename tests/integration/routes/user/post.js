@@ -10,17 +10,8 @@ var schemas = require('../../../../schemas');
 
 require('tapdate')();
 
-var ERROR_RESPONSE_SCHEMA = joi.object().keys({
-	errors: joi.array().items(
-		joi.object().keys({
-			title: joi.string().required(),
-			detail: joi.string().required(),
-			stack: joi.array(),
-			path: joi.string(),
-		})
-	),
-});
-
+var DATE_TOLERANCE = 5;
+var ERROR_RESPONSE_SCHEMA = schemas.response.validationError;
 var VALID_RESPONSE_SCHEMA = joi.object().keys({
 	user: schemas.model.user.required(),
 	token: schemas.jwtToken.required(),
@@ -49,7 +40,7 @@ test('POST /user', (t) => {
 				t.equal(res.body.user.displayname, DISPLAYNAME, 'displayname matches');
 				t.equal(res.body.user.email, false, 'email was null');
 				t.equal(res.body.user.deleted, false, 'not deleted');
-				t.dateNear(res.body.user.create_time, new Date(), 5, 'create time is current');
+				t.dateNear(res.body.user.create_time, new Date(), DATE_TOLERANCE, 'create time is current');
 				return schemas.validate(res.body, VALID_RESPONSE_SCHEMA);
 			})
 	);

@@ -1,5 +1,6 @@
 
 var config    = require('../config');
+var Promise   = require('bluebird');
 var boom      = require('boom');
 var basic     = require('basic-auth');
 var schemas   = require('../schemas');

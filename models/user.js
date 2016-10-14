@@ -88,8 +88,9 @@ exports.delete = function (username) {
 	var query = stripIndent`
 		MATCH (u:User { username: {username} }),
 			(u)-[:LOGIN_WITH]->(p:Password)
-		SET u.deleted = {deleted}, u.username = {replacement}
+		SET u.deleted = {deleted}, u.username = {replacement}, u.displayname = '[deleted]'
 		DETACH DELETE p
+		RETURN u
 	`;
 
 	var data = { username, replacement: username + '$' + random.alphanumeric(3), deleted: (new Date()).toISOString() };
@@ -97,5 +98,5 @@ exports.delete = function (username) {
 	var transaction = neo4j.transaction();
 
 	return transaction.run(query, data)
-		.then((result) => transaction.commit().then(() => result));
+		.then((results) => transaction.commit().then(() => get(results, '[0].u.properties')));
 };

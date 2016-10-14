@@ -30,3 +30,30 @@ exports.model.user = joi.object().keys({
 	deleted:     exports.deleted.required(),
 	create_time: exports.create_time.required(),
 });
+
+exports.response = {};
+exports.response.root = joi.object().keys({
+	name: joi.string().required(),
+	version: joi.string().regex(require('semver-regex')()).required(),
+	auth: exports.username,
+});
+
+exports.response.error = joi.object().keys({
+	errors: joi.array().items(
+		joi.object().keys({
+			title: joi.string().required(),
+			detail: joi.string().required(),
+			stack: joi.array(),
+		})
+	),
+});
+
+exports.response.validationError = joi.object().keys({
+	errors: joi.array().items(
+		joi.object().keys({
+			title: joi.string().required(),
+			detail: joi.string().required(),
+			path: joi.string(),
+		})
+	),
+});

@@ -15,6 +15,7 @@ module.exports = exports = rc(pkg.name, {
 		secret: 'This will be something else in prod',
 		defaultExpire: '7d',
 		noExpireSecret: 'Do not try to guess this, it will be different.',
+		credentialsRequired: false,
 	},
 
 	markdown: {

@@ -1,5 +1,4 @@
 
-var config  = require('./config');
 var logger  = require('./log');
 var express = require('express');
 var boom    = require('boom');
@@ -10,9 +9,6 @@ app.get('/favicon.ico', (req, res) => res.status(404).send()); // ignore favicon
 
 app.use(logger.middleware());
 app.use(require('body-parser').json());
-
-// API root
-app.get('/', (req, res) => res.json({ name: config.name, version: config.version }));
 
 app.use(require('./routes'));
 

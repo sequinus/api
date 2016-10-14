@@ -30,6 +30,7 @@
     "markdown-it": "~8.0.0",
     "neo4j-driver": "~1.1.0-M02",
     "rc": "~1.1.6",
+    "semver-regex": "~1.0.0",
     "uuid": "~2.0.3"
   },
   "devDependencies": {
