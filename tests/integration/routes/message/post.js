@@ -80,5 +80,29 @@ suite('POST /message', (s) => {
 			});
 	}));
 
+	s.test('post a new topic with no body', (t) => bootstrap({ users: 1 }).then((conditions) => {
+		var user = conditions.users[0];
+		return agent
+			.post('/message')
+			.set('Authorization', `Bearer ${user.token}`)
+			.send({})
+			.then((res) => {
+				t.equal(res.status, 400, 'http bad request');
+				t.deepEqual(res.body, {
+					errors: [
+						{
+							title: 'Request data is missing or in the incorrect format.',
+							detail: '"body" is required',
+							path: 'body',
+						},
+					],
+				}, 'correct error output');
+				return schemas.validate(res.body, schemas.response.validationError);
+			})
+			.then(() => neo4j.run('MATCH (m:Message) RETURN m'))
+			.then((results) => {
+				t.equal(results.length, 0, 'No messages were created');
+			});
+	}));
 
 });
