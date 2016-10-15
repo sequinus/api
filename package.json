@@ -31,6 +31,7 @@
     "joi": "~9.1.0",
     "jsonwebtoken": "~6.2.0",
     "lodash": "~4.16.4",
+    "lorem-ipsum": "~1.0.3",
     "markdown-it": "~8.0.0",
     "markdown-it-link-target": "~1.0.2",
     "neo4j-driver": "~1.1.0-M02",
