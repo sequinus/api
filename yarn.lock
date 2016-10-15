@@ -799,6 +799,10 @@ escope@^3.6.0:
     esrecurse "^4.1.0"
     estraverse "^4.1.1"
 
+eslint-config-chiper:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/eslint-config-chiper/-/eslint-config-chiper-1.0.0.tgz#fdff2c5b1d9dc1c24cb159a04d2994a246ddf6d4"
+
 eslint-plugin-cah:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/eslint-plugin-cah/-/eslint-plugin-cah-0.2.0.tgz#ba04011a95be532c6b44478554e50aa13ddef72b"
