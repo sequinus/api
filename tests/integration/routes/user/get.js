@@ -2,7 +2,8 @@ process.env.BLUEBIRD_DEBUG = true;
 process.env.BLUEBIRD_LONG_STACK_TRACES = true;
 
 var Promise = require('bluebird');
-var test    = require('tap').test;
+require('tapdate')();
+var suite     = require('../../../suite');
 var neo4j   = require('../../../../io/neo4j');
 var app     = require('../../../../index');
 var agent   = require('supertest-as-promised').agent(app);
@@ -18,18 +19,18 @@ var VALID_RESPONSE_SCHEMA = joi.object().keys({
 	user: schemas.model.user.required(),
 });
 
-test('GET /user', (t) => {
-	t.tearDown(() => neo4j.end());
+suite('GET /user', (s) => {
+	s.after(() => neo4j.end());
 
 	// purge the database before each test
-	t.beforeEach(() => neo4j.run('MATCH (n) DETACH DELETE (n)').then(() => null));
+	s.beforeEach(() => neo4j.run('MATCH (n) DETACH DELETE (n)').then(() => null));
 
 	var USERNAME = 'testuser';
 	var DISPLAYNAME = 'Joe User 😊';
 	var PASSWORD = 'password';
 	var EMAIL = 'joe@example.com';
 
-	t.test('get info for a user', (t) =>
+	s.test('get info for a user', (t) =>
 		User.createWithPassword(USERNAME, PASSWORD, { displayname: DISPLAYNAME, email: EMAIL })
 			.then(() => agent
 				.get('/user/' + USERNAME)
@@ -45,7 +46,7 @@ test('GET /user', (t) => {
 			)
 	);
 
-	t.test('get info for a user created with no email or display name', (t) =>
+	s.test('get info for a user created with no email or display name', (t) =>
 		User.createWithPassword(USERNAME, PASSWORD)
 			.then(() => agent
 				.get('/user/' + USERNAME)
@@ -61,7 +62,7 @@ test('GET /user', (t) => {
 			)
 	);
 
-	t.test('404s when a user does not exist', (t) =>
+	s.test('404s when a user does not exist', (t) =>
 		agent.get('/user/nobody')
 			.then((res) => {
 				t.equal(res.status, 404, 'http not found');
@@ -69,7 +70,7 @@ test('GET /user', (t) => {
 			})
 	);
 
-	t.test('404s when a user has been deleted', (t) =>
+	s.test('404s when a user has been deleted', (t) =>
 		User.createWithPassword(USERNAME, PASSWORD)
 			.then(() => User.delete(USERNAME))
 			.then((deletedUser) => Promise.join(
@@ -87,5 +88,4 @@ test('GET /user', (t) => {
 			))
 	);
 
-	t.end();
 });

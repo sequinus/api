@@ -1,7 +1,8 @@
 process.env.BLUEBIRD_DEBUG = true;
 process.env.BLUEBIRD_LONG_STACK_TRACES = true;
 
-var test      = require('tap').test;
+require('tapdate')();
+var suite     = require('../../suite');
 var neo4j     = require('../../../io/neo4j');
 var app       = require('../../../index');
 var agent     = require('supertest-as-promised').agent(app);
@@ -14,11 +15,11 @@ require('tapdate')();
 
 var ERROR_RESPONSE_SCHEMA = schemas.response.error;
 
-test('GET /authenticate', (t) => {
-	t.tearDown(() => neo4j.end());
+suite('GET /authenticate', (s) => {
+	s.after(() => neo4j.end());
 
 	// purge the database before each test
-	t.beforeEach(() => neo4j.run('MATCH (n) DETACH DELETE (n)').then(() => null));
+	s.beforeEach(() => neo4j.run('MATCH (n) DETACH DELETE (n)').then(() => null));
 
 	var USERNAME = 'testuser';
 	var PASSWORD = 'password';
@@ -28,7 +29,7 @@ test('GET /authenticate', (t) => {
 		token: schemas.jwtToken.required(),
 	});
 
-	t.test('authenticate with basic auth and get a token', (t) =>
+	s.test('authenticate with basic auth and get a token', (t) =>
 		User.createWithPassword(USERNAME, PASSWORD)
 			.then(() => agent
 				.get('/authenticate')
@@ -43,7 +44,7 @@ test('GET /authenticate', (t) => {
 			)
 	);
 
-	t.test('authenticate fails with bad username', (t) =>
+	s.test('authenticate fails with bad username', (t) =>
 		User.createWithPassword(USERNAME, PASSWORD)
 			.then(() => agent
 				.get('/authenticate')
@@ -55,7 +56,7 @@ test('GET /authenticate', (t) => {
 			)
 	);
 
-	t.test('authenticate fails with bad username', (t) =>
+	s.test('authenticate fails with bad username', (t) =>
 		User.createWithPassword(USERNAME, PASSWORD)
 			.then(() => agent
 				.get('/authenticate')
@@ -68,7 +69,7 @@ test('GET /authenticate', (t) => {
 			)
 	);
 
-	t.test('authenticate fails with bad password', (t) =>
+	s.test('authenticate fails with bad password', (t) =>
 		User.createWithPassword(USERNAME, PASSWORD)
 			.then(() => agent
 				.get('/authenticate')
@@ -81,35 +82,31 @@ test('GET /authenticate', (t) => {
 			)
 	);
 
-	t.end();
 });
 
-test('GET /', (t) => {
-	t.tearDown(() => neo4j.end());
+suite('GET /', (s) => {
+	s.after(() => neo4j.end());
 
 	// purge the database before each test
-	t.beforeEach(() => neo4j.run('MATCH (n) DETACH DELETE (n)').then(() => null));
+	s.beforeEach(() => neo4j.run('MATCH (n) DETACH DELETE (n)').then(() => null));
 
 	var USERNAME = 'testuser';
 	var PASSWORD = 'password';
+	var TOKEN;
 
-	var VALID_RESPONSE_SCHEMA = schemas.response.root;
+	s.before(() => makeToken(USERNAME).then((tok) => { TOKEN = tok; }));
 
-	makeToken(USERNAME).then((TOKEN) => {
-
-		t.test('authenticate with bearer token', (t) =>
-			User.createWithPassword(USERNAME, PASSWORD)
-				.then(() => agent
-					.get('/')
-					.set('Authorization', `Bearer ${TOKEN}`)
-					.then((res) => {
-						t.equal(res.status, 200, 'http ok');
-						t.equal(res.body.auth, USERNAME, 'shows user is logged in');
-						return schemas.validate(res.body, VALID_RESPONSE_SCHEMA);
-					})
-				)
+	s.test('authenticate with bearer token', (t) =>
+		User.createWithPassword(USERNAME, PASSWORD)
+			.then(() => agent
+				.get('/')
+				.set('Authorization', `Bearer ${TOKEN}`)
+				.then((res) => {
+					t.equal(res.status, 200, 'http ok');
+					t.equal(res.body.auth, USERNAME, 'shows user is logged in');
+					return schemas.validate(res.body, schemas.response.root);
+				})
+			)
 		);
 
-		t.end();
-	});
 });

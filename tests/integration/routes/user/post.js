@@ -1,7 +1,8 @@
 process.env.BLUEBIRD_DEBUG = true;
 process.env.BLUEBIRD_LONG_STACK_TRACES = true;
 
-var test    = require('tap').test;
+require('tapdate')();
+var suite     = require('../../../suite');
 var neo4j   = require('../../../../io/neo4j');
 var app     = require('../../../../index');
 var agent   = require('supertest-as-promised').agent(app);
@@ -17,17 +18,17 @@ var VALID_RESPONSE_SCHEMA = joi.object().keys({
 	token: schemas.jwtToken.required(),
 });
 
-test('POST /user', (t) => {
-	t.tearDown(() => neo4j.end());
+suite('POST /user', (s) => {
+	s.after(() => neo4j.end());
 
 	// purge the database before each test
-	t.beforeEach(() => neo4j.run('MATCH (n) DETACH DELETE (n)').then(() => null));
+	s.beforeEach(() => neo4j.run('MATCH (n) DETACH DELETE (n)').then(() => null));
 
 	var USERNAME = 'testuser';
 	var DISPLAYNAME = 'Joe User 😊';
 	var PASSWORD = 'password';
 
-	t.test('create a user with a password', (t) =>
+	s.test('create a user with a password', (t) =>
 		agent.post('/user')
 			.send({
 				username: USERNAME,
@@ -45,7 +46,7 @@ test('POST /user', (t) => {
 			})
 	);
 
-	t.test('rejects a malformed request', (t) =>
+	s.test('rejects a malformed request', (t) =>
 		agent.post('/user')
 			.send({
 				username: '',
@@ -57,5 +58,4 @@ test('POST /user', (t) => {
 			})
 	);
 
-	t.end();
 });
