@@ -10,7 +10,8 @@
     "watch": "nodemon www.js | bunyan"
   },
   "engines": {
-    "node": "4.x.x"
+    "node": "4.x.x",
+    "npm": "3.x"
   },
   "bin": "www.js",
   "author": "Jarvis Badgley <chiper@chipersoft.com> (http://chipersoft.com/)",
