@@ -32,9 +32,11 @@
     "jsonwebtoken": "~6.2.0",
     "lodash": "~4.16.4",
     "markdown-it": "~8.0.0",
+    "markdown-it-link-target": "~1.0.2",
     "neo4j-driver": "~1.1.0-M02",
     "rc": "~1.1.6",
     "semver-regex": "~1.0.0",
+    "striptags": "~2.1.1",
     "uuid": "~2.0.3"
   },
   "devDependencies": {
@@ -47,6 +49,6 @@
     "supertest": "~2.0.0",
     "supertest-as-promised": "~4.0.0",
     "tap": "~7.1.2",
-    "tapdate": "~1.0.1"
+    "tapdate": "1.0.1"
   }
 }

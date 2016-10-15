@@ -4,6 +4,7 @@ var random      = require('../lib/random');
 var stripIndent = require('common-tags/lib/stripIndent');
 var get         = require('lodash/get');
 var markdown    = require('../lib/markdown');
+var log         = require('../log')('models/message');
 
 var QUERY_MESSAGE_TOPIC = stripIndent`
 	MATCH (u:User { username: {username} })
@@ -53,9 +54,12 @@ exports.getBySlug = function (slug) {
 exports.create = function (options) {
 	var username = options.username;
 	var body = options.body;
-	var content = markdown(body);
 	var inReplyTo = options.inReplyTo;
 	var private = options.private || false;
+
+	// if message is a top level topic, strip out any markdown formatting.
+	var content = inReplyTo ? markdown(body).trim() : markdown.strip(body).trim();
+	log.debug('Generated message content', content);
 
 	if (!username || !body) return Promise.reject(new Error('models/message.create must have a username and body'));
 

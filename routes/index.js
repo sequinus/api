@@ -23,13 +23,15 @@ router.use((req, res, next) => {
 		return next();
 	}
 
+	req.log.debug(req.user, 'Received token for user');
+
 	User.get(req.user.username).then((user) => {
-		if (!user) return next(boom.unauthorized('User in authentication token does not exist.'));
+		if (!user) throw boom.unauthorized('User in authentication token does not exist.');
+		req.log.debug(user, 'Found user');
 		user.token = req.user;
 		req.user = user;
 		req.username = user.username;
-		next();
-	});
+	}).then(next, next);
 });
 
 router.get('/', (req, res) => res.json({
@@ -42,3 +44,4 @@ router.get('/user/:username', require('./user/get'));
 router.post('/user', require('./user/post'));
 router.delete('/user/:username', requiresAuth, require('./user/delete'));
 
+router.post('/message', requiresAuth, require('./message/post'));

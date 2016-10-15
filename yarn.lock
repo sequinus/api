@@ -1900,6 +1900,10 @@ markdown-it:
     mdurl "^1.0.1"
     uc.micro "^1.0.3"
 
+markdown-it-link-target:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/markdown-it-link-target/-/markdown-it-link-target-1.0.2.tgz#d2fd45575f35148e9c5e235eb787abb6f9460a67"
+
 md5-hex@^1.2.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/md5-hex/-/md5-hex-1.3.0.tgz#d2c4afe983c4370662179b8cad145219135046c4"
@@ -2804,6 +2808,10 @@ strip-json-comments@~1.0.1, strip-json-comments@~1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-1.0.4.tgz#1e15fbcac97d3ee99bf2d73b4c656b082bbafb91"
 
+striptags:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/striptags/-/striptags-2.1.1.tgz#e771b8b3193b97bbed392dca59a78279d3c8a6a6"
+
 superagent@^2.0.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/superagent/-/superagent-2.3.0.tgz#703529a0714e57e123959ddefbce193b2e50d115"
@@ -2902,9 +2910,9 @@ tap@~7.1.2:
     tap-parser "^2.2.0"
     tmatch "^2.0.1"
 
-tapdate:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/tapdate/-/tapdate-1.0.0.tgz#7cfdb92d62bd99444878cd20efab809e18c1b6f7"
+tapdate@1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/tapdate/-/tapdate-1.0.1.tgz#7f6c6858a1a4e5ac9d1ea7a8fdcb2996cba803a9"
   dependencies:
     moment "^2.15.1"
 
