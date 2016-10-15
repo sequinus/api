@@ -36,7 +36,7 @@ suite('POST /message', (s) => {
 			.then((results) => {
 				results = results[0];
 				t.equal(results.m.properties.body, 'Hello, **this** is a _new_ message.\n\nThis [message](http://google.com) should become a topic.', 'message body is trimmed');
-				t.equal(results.m.properties.content, 'Hello, this is a new message.\nThis message should become a topic.', 'message content contains no html');
+				t.equal(results.m.properties.content, 'Hello, this is a new message.\n\nThis message should become a topic.', 'message content contains no html');
 				t.dateNear(results.m.properties.create_time, new Date(), DATE_TOLERANCE, 'create time is set');
 				t.dateNear(results.m.properties.update_time, new Date(), DATE_TOLERANCE, 'update time is set');
 				t.dateSame(results.m.properties.create_time, results.m.properties.update_time, 'second', 'create time and update time are identical');
