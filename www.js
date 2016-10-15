@@ -15,6 +15,10 @@ var Promise   = require('bluebird');
 
 log.info(`Current environment is "${config.envName}"`);
 
+if (config.isProd) {
+	log.info(config, 'Current configuration');
+}
+
 var server = http.createServer(app);
 server.listen(config.port, config.host, () => {
 	log.info(`Express server listening at http://${config.host}:${config.port}`);
