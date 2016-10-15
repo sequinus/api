@@ -23,8 +23,26 @@ module.exports = exports = function suite (name, extra, cb) {
 				tests.push(Array.from(arguments));
 			},
 
-			skip () {
-				// no nothing
+			skip (n, e, c) {
+				var args = Test.prototype._parseTestArgs(n, e, c);
+				n = args[0];
+				e = args[1];
+				c = args[2];
+
+				e.skip = true;
+
+				tests.push([ n, e, c ]);
+			},
+
+			todo (n, e, c) {
+				var args = Test.prototype._parseTestArgs(n, e, c);
+				n = args[0];
+				e = args[1];
+				c = args[2];
+
+				e.skip = true;
+
+				tests.push([ n, e, c ]);
 			},
 
 			only () {
