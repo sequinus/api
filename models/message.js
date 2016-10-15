@@ -19,7 +19,7 @@ var QUERY_MESSAGE_REPLY = stripIndent`
 	CREATE
 		(m:Message {message}),
 		(m)-[:CREATED_BY]->(u),
-		(m)-[:IN_REPLY_TO]->(pm),
+		(m)-[:IN_REPLY_TO]->(pm)
 	RETURN m
 `;
 
