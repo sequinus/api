@@ -17,36 +17,39 @@ module.exports = exports = function suite (name, extra, cb) {
 	var after = (done) => done();
 	var failure = () => null;
 
-	var harness = {
-		test () {
-			tests.push(Array.from(arguments));
-		},
+	return tap.test(name, extra, (tHarness) => {
+		var harness = {
+			test () {
+				tests.push(Array.from(arguments));
+			},
 
-		skip () {
-			// no nothing
-		},
+			skip () {
+				// no nothing
+			},
 
-		only () {
-			only = Array.from(arguments);
-		},
+			only () {
+				only = Array.from(arguments);
+			},
 
-		before (fn) {
-			before = fn;
-		},
+			before (fn) {
+				before = fn;
+			},
 
-		after (fn) {
-			after = fn;
-		},
+			after (fn) {
+				after = fn;
+			},
 
-		onFailure (fn) {
-			failure = fn;
-		},
-	};
+			beforeEach: tHarness.beforeEach.bind(tHarness),
+			afterEach:  tHarness.afterEach.bind(tHarness),
 
-	cb(harness);
+			onFailure (fn) {
+				failure = fn;
+			},
+		};
 
-	return tap.test(name, extra, (tHarness) =>
-		fromCallbackOrPromise(before)
+		cb(harness);
+
+		return fromCallbackOrPromise(before)
 			.then(() => {
 				if (only) return Promise.resolve(tHarness.test.apply(tHarness, only)).catch(failure);
 
@@ -56,8 +59,8 @@ module.exports = exports = function suite (name, extra, cb) {
 
 				return Promise.all(pTests);
 			})
-			.then(() => fromCallbackOrPromise(after))
-	);
+			.then(() => fromCallbackOrPromise(after));
+	});
 };
 
 function fromCallbackOrPromise (fn) {
@@ -65,7 +68,7 @@ function fromCallbackOrPromise (fn) {
 	return Promise.fromCallback((cb) => {
 		var ret = fn(cb);
 		if (ret && typeof ret.then === 'function') {
-			Promise.resolve(ret).toCallback(cb);
+			Promise.resolve(ret).asCallback(cb);
 		} else if (fn.length === 0) {
 			// function doesn't support a callback and didn't
 			// return a promise, so assume sync
