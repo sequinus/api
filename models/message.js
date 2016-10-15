@@ -25,13 +25,25 @@ var QUERY_MESSAGE_REPLY = stripIndent`
 
 exports.MESSAGE_ID_LENGTH = 10;
 
-exports.get = function (id) {
+exports.getById = function (id) {
 	var query = stripIndent`
 		MATCH (m:Message { id: {id} })
 		RETURN m
 	`;
 
 	var data = { id };
+
+	return neo4j.run(query, data)
+		.then((results) => get(results, '[0].m.properties'));
+};
+
+exports.getBySlug = function (slug) {
+	var query = stripIndent`
+		MATCH (m:Message { slug: {slug} })
+		RETURN m
+	`;
+
+	var data = { slug };
 
 	return neo4j.run(query, data)
 		.then((results) => get(results, '[0].m.properties'));
@@ -47,8 +59,11 @@ exports.create = function (options) {
 
 	if (!username || !body) return Promise.reject(new Error('models/message.create must have a username and body'));
 
+	var id = random.id(exports.MESSAGE_ID_LENGTH);
+
 	var message = {
-		id: random.id(exports.MESSAGE_ID_LENGTH),
+		id,
+		slug: options.slug || id,
 		body,
 		content,
 		private: !!private,
