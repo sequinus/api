@@ -2,7 +2,7 @@
 var pkg = require('./package.json');
 var rc   = require('rc');
 
-module.exports = exports = rc(pkg.name, {
+module.exports = exports = rc(pkg.name.replace(/[.-]/g, ''), {
 	name: pkg.name,
 	version: pkg.version,
 
@@ -36,3 +36,7 @@ module.exports = exports = rc(pkg.name, {
 if (process.env.PORT) exports.port = process.env.PORT;
 if (process.env.HOST) exports.host = process.env.HOST;
 if (process.env.LOG_LEVEL) exports.logLevel = process.env.LOG_LEVEL;
+
+if (!module.parent) {
+	console.log(exports); // eslint-disable-line
+}
