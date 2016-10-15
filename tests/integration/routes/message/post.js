@@ -2,25 +2,25 @@ process.env.BLUEBIRD_DEBUG = true;
 process.env.BLUEBIRD_LONG_STACK_TRACES = true;
 
 // var Promise   = require('bluebird');
-var test      = require('tap').test;
+require('tapdate')();
+var suite     = require('../../../suite');
 var bootstrap = require('../../../bootstrap');
 var neo4j     = require('../../../../io/neo4j');
 var agent     = bootstrap.agent;
 var joi       = require('joi');
 var schemas   = require('../../../../schemas');
 
-require('tapdate')();
 
 var DATE_TOLERANCE = 5;
 var VALID_RESPONSE_SCHEMA = joi.object().keys({
 	message: schemas.model.message,
 });
 
-test('POST /message', (t) => {
+suite('POST /message', (s) => {
 
-	t.tearDown(() => neo4j.end());
+	s.after(() => neo4j.end());
 
-	t.test('post a new topic', (t) => bootstrap({ users: 2 }).then((conditions) => {
+	s.test('post a new topic', (t) => bootstrap({ users: 2 }).then((conditions) => {
 		var user = conditions.users[1];
 		return agent
 			.post('/message')
@@ -48,7 +48,7 @@ test('POST /message', (t) => {
 			});
 	}));
 
-	t.test('post a new topic with a body of only whitespace', (t) => bootstrap({ users: 1 }).then((conditions) => {
+	s.test('post a new topic with a body of only whitespace', (t) => bootstrap({ users: 1 }).then((conditions) => {
 		var user = conditions.users[0];
 		return agent
 			.post('/message')
@@ -80,7 +80,5 @@ test('POST /message', (t) => {
 			});
 	}));
 
-
-	t.end();
 
 });
