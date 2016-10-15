@@ -9,6 +9,9 @@
     "lint": "eslint ./",
     "watch": "nodemon www.js | bunyan"
   },
+  "engines": {
+    "node": "4.x.x"
+  },
   "bin": "www.js",
   "author": "Jarvis Badgley <chiper@chipersoft.com> (http://chipersoft.com/)",
   "license": "BSD-3-Clause",

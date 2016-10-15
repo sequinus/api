@@ -1,10 +1,15 @@
 
 var pkg = require('./package.json');
 var rc   = require('rc');
+var defaultsDeep = require('lodash/defaultsDeep');
 
-module.exports = exports = rc(pkg.name.replace(/[.-]/g, ''), {
+var envName = process.env.NODE_ENV || 'development';
+
+var appConfig = rc(pkg.name.replace(/[.-]/g, ''), {
 	name: pkg.name,
 	version: pkg.version,
+	envName,
+	isProd: envName === 'production',
 
 	port: 3000,
 	host: '0.0.0.0',
@@ -32,6 +37,10 @@ module.exports = exports = rc(pkg.name.replace(/[.-]/g, ''), {
 		},
 	},
 });
+
+var envConfig = rc(pkg.name.replace(/[.-]/g, '') + '_' + envName, {});
+
+module.exports = exports = defaultsDeep(envConfig, appConfig);
 
 if (process.env.PORT) exports.port = process.env.PORT;
 if (process.env.HOST) exports.host = process.env.HOST;

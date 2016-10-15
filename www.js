@@ -1,19 +1,19 @@
 #!/usr/bin/env node
 
-var isProd = process.env.NODE_ENV === 'production';
+var config    = require('./config');
 
-if (!isProd) {
+if (!config.isProd) {
 	process.env.BLUEBIRD_DEBUG = true;
 	process.env.BLUEBIRD_LONG_STACK_TRACES = true;
 }
-
-var config    = require('./config');
 
 var log     = require('./log')('www');
 var app     = require('./index');
 
 var http      = require('http');
 var Promise   = require('bluebird');
+
+log.info(`Current environment is "${config.envName}"`);
 
 var server = http.createServer(app);
 server.listen(config.port, config.host, () => {
