@@ -10,7 +10,6 @@ var agent     = bootstrap.agent;
 var joi       = require('joi');
 var schemas   = require('../../../../schemas');
 
-
 var DATE_TOLERANCE = 5;
 var VALID_RESPONSE_SCHEMA = joi.object().keys({
 	message: schemas.model.message,
@@ -29,7 +28,7 @@ suite('POST /message', (s) => {
 				body: ' Hello, **this** is a _new_ message.\n\nThis [message](http://google.com) should become a topic. ',
 			})
 			.then((res) => {
-				t.equal(res.status, 202, 'http accepted');
+				t.equal(res.status, 201, 'http created');
 				return schemas.validate(res.body, VALID_RESPONSE_SCHEMA);
 			})
 			.then(() => neo4j.run('MATCH (m:Message)-[r]->(u:User) RETURN *'))
@@ -44,7 +43,6 @@ suite('POST /message', (s) => {
 				t.equal(results.r.start.low, results.m.identity.low, 'between the message');
 				t.equal(results.r.end.low, results.u.identity.low, 'and the user');
 				t.equal(results.u.properties.username, user.username, 'bound to the correct user');
-				// console.log(require('util').inspect(results, { colors: true, depth: 6 }));
 			});
 	}));
 

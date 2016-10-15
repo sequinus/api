@@ -12,7 +12,7 @@ var messagePostSchema = joi.object().keys({
 	slug: schemas.messageSlug,
 });
 
-module.exports = exports = function postUser (req, res, next) {
+module.exports = exports = function postMessage (req, res, next) {
 	schemas.validate(req.body, messagePostSchema).then((body) => Promise.join(
 		Promise.resolve(body.inReplyTo && Message.getById(body.inReplyTo)),
 		Promise.resolve(body.slug && Message.getBySlug(body.slug)),
@@ -36,7 +36,7 @@ module.exports = exports = function postUser (req, res, next) {
 			return Message.create(options);
 		}
 	)).then((message) => {
-		res.status(202);
+		res.status(201);
 		res.json({ message });
 	}).catch(next);
 };
