@@ -51,7 +51,7 @@ exports.create = function (options) {
 		id: random.id(exports.MESSAGE_ID_LENGTH),
 		body,
 		content,
-		private,
+		private: !!private,
 		deleted: false,
 		update_time: (new Date()).toISOString(),
 		create_time: (new Date()).toISOString(),
