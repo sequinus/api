@@ -137,4 +137,38 @@ suite('POST /message', (s) => {
 			});
 	}));
 
+	s.test('post a reply to a message', (t) => bootstrap({ depth: 2, users: 1 }).then((conditions) => {
+		var user = conditions.users[0];
+		var parentMessage = conditions.tails[0];
+		return agent
+			.post('/message')
+			.set('Authorization', `Bearer ${user.token}`)
+			.send({
+				body: '👻 This message contains emoji and a link. http://twitter.com',
+				inReplyTo: parentMessage.id,
+			})
+			.then((res) => {
+				t.equal(res.status, 201, 'http created');
+				return schemas.validate(res.body, VALID_RESPONSE_SCHEMA);
+			})
+			.then(() => neo4j.run('MATCH (t:Message)<--(p:Message)<-[r]-(m:Message), (m)-[c]->(u:User) RETURN m, r, p, c, u'))
+			.then((results) => {
+				results = results[0];
+				t.equal(results.m.properties.body, '👻 This message contains emoji and a link. http://twitter.com', 'message body is trimmed');
+				t.equal(results.m.properties.content, '<p>\uD83D\uDC7B This message contains emoji and a link. <a href="http://twitter.com" target="_blank">http://twitter.com</a></p>');
+				t.dateNear(results.m.properties.create_time, new Date(), DATE_TOLERANCE, 'create time is set');
+				t.dateNear(results.m.properties.update_time, new Date(), DATE_TOLERANCE, 'update time is set');
+				t.dateSame(results.m.properties.create_time, results.m.properties.update_time, 'second', 'create time and update time are identical');
+				t.equal(results.r.type, 'IN_REPLY_TO', 'IN_REPLY_TO relationship exists');
+				t.equal(results.r.start.low, results.m.identity.low, 'between the message');
+				t.equal(results.r.end.low, results.p.identity.low, 'and the topic');
+				t.equal(results.p.properties.id, parentMessage.id, 'parent message is correct');
+				t.equal(results.c.type, 'CREATED_BY', 'CREATED_BY relationship exists');
+				t.equal(results.c.start.low, results.m.identity.low, 'between the message');
+				t.equal(results.c.end.low, results.u.identity.low, 'and the user');
+				t.equal(results.u.properties.username, user.username, 'bound to the correct user');
+
+			});
+	}));
+
 });

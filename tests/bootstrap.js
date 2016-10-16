@@ -13,18 +13,57 @@ var usernames  = require('./usernames.json');
 var lorem      = require('lorem-ipsum');
 
 module.exports = exports = function bootstrap (options) {
-	options = options || {};
+	options = _.defaults(options, {
+		users: 0,
+		topics: 0,
+		topicConfig: {},
+		depth: 0,
+		messageConfigs: [],
+	});
+
 	return neo4j.run('MATCH (n) DETACH DELETE (n)').then(() => {
 		var d = {};
 
-		var needUsers = options.users || options.topics;
-
-		if (needUsers) {
-			d.users = exports.createUsers(options.users);
+		var needUsers = options.users || 0;
+		if (options.depth) {
+			needUsers += (options.depth || 0) * (options.topics || 1);
+		} else if (options.topics) {
+			needUsers += options.topics;
 		}
 
-		if (options.topics) {
-			d.topics = Promise.join(options.topics, d.users, exports.createTopics);
+
+		if (needUsers) {
+			d.users = exports.createUsers(needUsers);
+		}
+
+		if (options.topics || options.depth) {
+			d.topics = Promise.join(
+				options.topics || (options.depth && 1),
+				d.users,
+				options.topicConfig,
+				exports.createTopics
+			);
+		}
+
+		if (options.depth) {
+			d.tails = Promise.join(d.users, d.topics, (users, topics) => Promise.map(topics, (topic) => {
+				function addMessage (parent, level) {
+					if (level > options.depth - 1) return Promise.resolve(parent);
+					return Message.create(
+						Object.assign({
+							username: users.shift().username,
+							body: lorem(),
+							inReplyTo: parent.id,
+						}, options.messageConfigs[level])
+					).then((message) => {
+						parent.replies = [ message ];
+						message.parent = parent;
+						return addMessage(message, level + 1);
+					});
+				}
+
+				return addMessage(topic, 1);
+			}));
 		}
 
 		return Promise.props(d);
@@ -52,11 +91,11 @@ exports.createUsers = function (count) {
 	));
 };
 
-exports.createTopics = function (count, users) {
+exports.createTopics = function (count, users, opts) {
 	var pUserSet = _.times(count, (i) => users[ i % (users.length - 1)]);
 
-	return Promise.map(pUserSet, (user) => Message.create({
+	return Promise.map(pUserSet, (user) => Message.create(Object.assign({
 		username: user.username,
 		body: lorem(),
-	}));
+	}, opts)));
 };
