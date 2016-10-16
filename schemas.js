@@ -50,6 +50,7 @@ exports.model.message = joi.object().keys({
 	deleted: exports.deleted,
 	update_time: exports.create_time.required(), // not a typo, update_time is same as create_time
 	create_time: exports.create_time.required(),
+	author: exports.username.required(),
 });
 
 exports.response = {};
