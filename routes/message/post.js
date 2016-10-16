@@ -26,6 +26,19 @@ module.exports = exports = function postMessage (req, res, next) {
 				throw boom.conflict(`A message already exists with the slug of "${body.slug}".`);
 			}
 
+			var private = body.private;
+			var hidden;
+			// if a hidden value is defined, use it
+			if (typeof body.hidden !== 'undefined') {
+				hidden = body.hidden;
+			// otherwise, if this is a child post, hidden is the private value
+			} else if (body.inReplyTo) {
+				hidden = private;
+			// if this is a topic, hidden defaults to false
+			} else {
+				hidden = false;
+			}
+
 			// if message is a top level topic, strip out any markdown formatting.
 			var content = body.inReplyTo ? markdown(body.body).trim() : markdown.strip(body.body).trim();
 
@@ -38,7 +51,8 @@ module.exports = exports = function postMessage (req, res, next) {
 				body: body.body,
 				content,
 				inReplyTo: body.inReplyTo,
-				private: body.private,
+				private,
+				hidden,
 				slug: body.slug,
 			};
 

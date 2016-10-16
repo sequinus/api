@@ -55,7 +55,6 @@ exports.create = function (options) {
 	var username = options.username;
 	var body = options.body;
 	var inReplyTo = options.inReplyTo;
-	var private = options.private || false;
 
 	// if no content was provided, generated it here
 	// if message is a top level topic, strip out any markdown formatting.
@@ -71,7 +70,8 @@ exports.create = function (options) {
 		slug: options.slug || id,
 		body,
 		content,
-		private: !!private,
+		private: !!options.private,
+		hidden: !!options.hidden,
 		deleted: false,
 		update_time: (new Date()).toISOString(),
 		create_time: (new Date()).toISOString(),

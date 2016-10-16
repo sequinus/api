@@ -46,6 +46,7 @@ exports.model.message = joi.object().keys({
 	body: exports.messageBody.required(),
 	content: exports.messageContent.required(),
 	private: joi.boolean(),
+	hidden: joi.boolean(),
 	deleted: exports.deleted,
 	update_time: exports.create_time.required(), // not a typo, update_time is same as create_time
 	create_time: exports.create_time.required(),
