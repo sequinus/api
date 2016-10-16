@@ -40,7 +40,7 @@ module.exports = exports = function suite (name, extra, cb) {
 				e = args[1];
 				c = args[2];
 
-				e.skip = true;
+				e.todo = true;
 
 				tests.push([ n, e, c ]);
 			},
