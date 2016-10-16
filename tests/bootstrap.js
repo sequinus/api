@@ -12,7 +12,19 @@ var makeToken  = require('../lib/sign-jwt');
 var usernames  = require('./usernames.json');
 var lorem      = require('lorem-ipsum');
 
+function append (target, source) {
+	Array.prototype.push.apply(target, source);
+}
+
+var conditions;
+
 module.exports = exports = function bootstrap (options) {
+	conditions = {
+		users: [],
+		topics: [],
+		tails: [],
+	};
+
 	options = _.defaults(options, {
 		users: 0,
 		topics: 0,
@@ -24,50 +36,27 @@ module.exports = exports = function bootstrap (options) {
 	return neo4j.run('MATCH (n) DETACH DELETE (n)').then(() => {
 		var d = {};
 
-		var needUsers = options.users || 0;
+		var userCount = options.users || 0;
 		if (options.depth) {
-			needUsers += (options.depth || 0) * (options.topics || 1);
+			userCount += (options.depth || 0) * (options.topics || 1);
 		} else if (options.topics) {
-			needUsers += options.topics;
+			userCount += options.topics;
 		}
 
-
-		if (needUsers) {
-			d.users = exports.createUsers(needUsers);
+		if (userCount) {
+			d.users = exports.createUsers(userCount);
 		}
 
-		if (options.topics || options.depth) {
-			d.topics = Promise.join(
-				options.topics || (options.depth && 1),
-				d.users,
-				options.topicConfig,
-				exports.createTopics
-			);
+		if (options.topics) {
+			d.topics = d.users.then(() => exports.createTopics(options.topics));
 		}
 
-		if (options.depth) {
-			d.tails = Promise.join(d.users, d.topics, (users, topics) => Promise.map(topics, (topic) => {
-				function addMessage (parent, level) {
-					if (level > options.depth - 1) return Promise.resolve(parent);
-					return Message.create(
-						Object.assign({
-							username: users.shift().username,
-							body: lorem(),
-							inReplyTo: parent.id,
-						}, options.messageConfigs[level])
-					).then((message) => {
-						parent.replies = [ message ];
-						message.parent = parent;
-						return addMessage(message, level + 1);
-					});
-				}
-
-				return addMessage(topic, 1);
-			}));
+		if (options.chains || options.depth) {
+			d.tails = d.users.then(() => Promise.all(_.times(options.chains || 1, () => exports.createChain(options.depth))));
 		}
 
 		return Promise.props(d);
-	});
+	}).then(() => conditions);
 };
 
 exports.agent = agent;
@@ -88,14 +77,90 @@ exports.createUsers = function (count) {
 			user.token = token;
 			return user;
 		}
-	));
+	)).then((users) => {
+		if (conditions) {
+			append(conditions.users, users);
+		}
+		return users;
+	});
 };
 
-exports.createTopics = function (count, users, opts) {
-	var pUserSet = _.times(count, (i) => users[ i % (users.length - 1)]);
+exports.createMessage = function (user, parent, settings) {
+	var username;
+	if (_.isObjectLike(user) && user.username) {
+		username = user.username;
+	} else if (typeof user === 'string') {
+		username = user;
+	} else if (typeof user === 'number' && conditions) {
+		username = conditions.users[user % (conditions.users.length - 1)].username;
+	} else if (conditions) {
+		username = random.from(conditions.users).username;
+	} else {
+		return Promise.reject(new Error('Bootstrap could not find a user to create a message for'));
+	}
 
-	return Promise.map(pUserSet, (user) => Message.create(Object.assign({
-		username: user.username,
+	var inReplyTo;
+	if (_.isObjectLike(parent)) {
+		inReplyTo = parent.id;
+	} else if (typeof parent === 'string') {
+		inReplyTo = parent;
+	}
+
+	var opts = Object.assign({
+		username,
 		body: lorem(),
-	}, opts)));
+		inReplyTo,
+	}, settings);
+
+	return Message.create(opts).then((message) => {
+		if (_.isObjectLike(parent)) {
+			parent.replies = parent.replies || [];
+			parent.replies.push(message);
+			message.parent = parent;
+		}
+		return message;
+	});
+};
+
+exports.createTopics = function (count, settings) {
+	var pTopics = _.times(count, (i) => exports.createMessage(i, null, settings && settings[i]));
+
+	return Promise.all(pTopics)
+		.then((topics) => {
+			if (conditions) {
+				append(conditions.topics, topics);
+				append(conditions.tails, topics);
+			}
+			return topics;
+		});
+};
+
+exports.createChain = function (depth, messages, parent) {
+	var tail;
+
+	if (typeof parent === 'object') {
+		tail = parent;
+	} else if (typeof parent === 'string') {
+		tail = Message.getById(parent);
+	}
+
+	function addMessage (parent, level) {
+		if (level + 1 > depth) return Promise.resolve(parent);
+		return exports.createMessage(null, parent, messages && messages[level])
+			.then((message) => addMessage(message, level + 1));
+	}
+
+	return Promise.join(tail, 0, addMessage)
+		.then((tail) => {
+			if (conditions) {
+				var i = conditions.tails.indexOf(parent);
+				if (i > -1) {
+					conditions.tails[i] = tail;
+				} else {
+					conditions.tails.push(tail);
+				}
+			}
+			return tail;
+		});
+
 };
