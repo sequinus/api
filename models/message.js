@@ -57,8 +57,9 @@ exports.create = function (options) {
 	var inReplyTo = options.inReplyTo;
 	var private = options.private || false;
 
+	// if no content was provided, generated it here
 	// if message is a top level topic, strip out any markdown formatting.
-	var content = inReplyTo ? markdown(body).trim() : markdown.strip(body).trim();
+	var content = options.content || (inReplyTo ? markdown(body).trim() : markdown.strip(body).trim());
 	log.debug('Generated message content', content);
 
 	if (!username || !body) return Promise.reject(new Error('models/message.create must have a username and body'));
