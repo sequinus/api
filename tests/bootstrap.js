@@ -52,7 +52,9 @@ module.exports = exports = function bootstrap (options) {
 		}
 
 		if (options.chains || options.depth) {
-			d.tails = d.users.then(() => Promise.all(_.times(options.chains || 1, () => exports.createChain(options.depth))));
+			d.tails = d.users.then(() => Promise.all(
+				_.times(options.chains || 1, () => exports.createChain(options.depth))
+			));
 		}
 
 		return Promise.props(d);
@@ -147,7 +149,10 @@ exports.createChain = function (depth, messages, parent) {
 	function addMessage (parent, level) {
 		if (level + 1 > depth) return Promise.resolve(parent);
 		return exports.createMessage(null, parent, messages && messages[level])
-			.then((message) => addMessage(message, level + 1));
+			.then((message) => {
+				if (!parent) conditions.topics.push(message);
+				return addMessage(message, level + 1);
+			});
 	}
 
 	return Promise.join(tail, 0, addMessage)

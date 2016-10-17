@@ -18,7 +18,7 @@ exports.validate = function (value, schema) {
 		});
 };
 
-exports.username       = joi.string().min(3, 'utf8').max(30, 'utf8').regex(/^[a-zA-Z0-9_-]+$/);
+exports.username       = joi.string().min(3, 'utf8').max(30, 'utf8').regex(/^[a-zA-Z0-9_-]+$/).allow('[deleted]');
 exports.displayname    = joi.string().trim().min(1, 'utf8').max(100, 'utf8');
 exports.password       = joi.string().min(8);
 exports.email          = joi.string().trim().email().allow(false);
@@ -48,9 +48,15 @@ exports.model.message = joi.object().keys({
 	private: joi.boolean(),
 	hidden: joi.boolean(),
 	deleted: exports.deleted,
+	deletedBy: exports.username.allow(null)
+		.when('deleted', { is: joi.string(),
+			then: joi.string().isoDate().required(),
+		}),
 	update_time: exports.create_time.required(), // not a typo, update_time is same as create_time
 	create_time: exports.create_time.required(),
 	author: exports.username.required(),
+	parent: joi.lazy(() => exports.model.message),
+	replies: joi.array().items(joi.lazy(() => exports.model.message)),
 });
 
 exports.response = {};
