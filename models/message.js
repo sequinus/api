@@ -29,33 +29,46 @@ var QUERY_MESSAGE_REPLY = stripIndent`
 
 exports.MESSAGE_ID_LENGTH = 10;
 
-exports.getById = function (id, depth) {
-	depth = Number(depth || 1);
+exports.getById = function (id, options) {
+	options = options || {};
+
+	var childDepth = typeof options.depth === 'undefined' ? 1 : parseInt(options.depth, 10);
+	var childQuery = '';
+	if (childDepth) {
+		childQuery = stripIndent`
+			OPTIONAL MATCH
+				(message)<-[rChild:IN_REPLY_TO*1..${childDepth}]-(child)-[rCAuthor:CREATED_BY]->(CAuthor)
+			OPTIONAL MATCH
+				(child)-[:DELETED_BY]->(cDeletedBy)
+		`;
+	}
+
+	var parentDepth = typeof options.parents === 'undefined' ? 10 : parseInt(options.parents, 10);
+	var parentQuery = '';
+	if (parentDepth) {
+		parentQuery = stripIndent`
+			OPTIONAL MATCH (message)-[rParent:IN_REPLY_TO*1..${parentDepth}]->(parent)-[rPAuthor:CREATED_BY]->(pAuthor)
+			OPTIONAL MATCH (parent)-[:DELETED_BY]->(pDeletedBy)
+		`;
+	}
+
 	var query = stripIndent`
-		MATCH
-			(message:Message { id: {id} })-[rAuthor:CREATED_BY]->(author)
-		OPTIONAL MATCH
-			(message)-[rParent:IN_REPLY_TO*1..10]->(parent)-[rPAuthor:CREATED_BY]->(pAuthor)
-		OPTIONAL MATCH
-			(message)<-[rChild:IN_REPLY_TO*1..${depth}]-(child)-[rCAuthor:CREATED_BY]->(CAuthor)
-		OPTIONAL MATCH
-			(message)-[:DELETED_BY]->(deletedBy)
-		OPTIONAL MATCH
-			(child)-[:DELETED_BY]->(cDeletedBy)
-		OPTIONAL MATCH
-			(parent)-[:DELETED_BY]->(pDeletedBy)
+		MATCH (message:Message { id: {id} })-[rAuthor:CREATED_BY]->(author)
+		OPTIONAL MATCH (message)-[:DELETED_BY]->(deletedBy)
+		${childQuery}
+		${parentQuery}
 		RETURN *
-		ORDER BY child.create_time
+		${childQuery && 'ORDER BY child.create_time'}
 	`;
 
-	var data = { id, depth };
+	var data = { id, childDepth, parentDepth };
 
 	return neo4j.run(query, data)
 		.then((results) => {
 			linkNodes(results);
 			var mainNode = get(results, '[0].message');
 			if (!mainNode) return null;
-			console.log(require('util').inspect(results[0].message, { colors: true, depth: 6 }));
+			// console.log(require('util').inspect(results[0].message, { colors: true, depth: 6 }));
 
 			var message = mainNode.properties;
 			message.author = processMessageAuthor(mainNode);
