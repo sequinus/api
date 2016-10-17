@@ -21,6 +21,7 @@ var conditions;
 module.exports = exports = function bootstrap (options) {
 	conditions = {
 		users: [],
+		userMap: {},
 		topics: [],
 		tails: [],
 	};
@@ -82,6 +83,9 @@ exports.createUsers = function (count) {
 	)).then((users) => {
 		if (conditions) {
 			append(conditions.users, users);
+			users.forEach((user) => {
+				conditions.userMap[user.username] = user;
+			});
 		}
 		return users;
 	});
