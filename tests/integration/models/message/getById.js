@@ -15,12 +15,27 @@ suite('models/message.getById', (s) => {
 
 	s.after(() => neo4j.end());
 
-	s.test('returns all children and parents', (t) => bootstrap({ depth: 6 }).then((conditions) => {
+	s.test('returns no children or parents by default', (t) => bootstrap({ depth: 3 }).then((conditions) => {
+		var message = conditions.topics[0].replies[0];
+		return Message.getById(message.id, { depth: 0, context: 0 })
+			.then((result) => schemas.validate(result, schemas.model.message))
+			.then((result) => {
+				t.equal(result.id, message.id, 'target message is correct');
+				t.equal(result.body, message.body, 'target message has correct body');
+				t.equal(result.author, message.author, 'target message has correct author');
+				t.notOk(result.parent, 'parent is absent');
+				t.equal(result.level, 1, 'shows there is a parent above it');
+				t.notOk(result.replies, 'replies are absent');
+				t.equal(result.replyCount, 1, 'shows there is one reply');
+			});
+	}));
+
+	s.test('returns all children and parents when asked for', (t) => bootstrap({ depth: 6 }).then((conditions) => {
 		var message = conditions.tails[0].parent.parent.parent;
 		return Promise.props({
 			secondChild: bootstrap.createMessage(null, message),
 		})
-			.then(() => Message.getById(message.id, { depth: 10 }))
+			.then(() => Message.getById(message.id, { depth: 10, context: 10 }))
 			.then((result) => schemas.validate(result, schemas.model.message))
 			.then((result) => {
 				t.equal(result.id, message.id, 'main message is our target');
@@ -39,27 +54,13 @@ suite('models/message.getById', (s) => {
 			});
 	}));
 
-	s.test('only returns one level of children by default', (t) => bootstrap({ depth: 3 }).then((conditions) => {
-		var message = conditions.topics[0];
-		return Message.getById(message.id)
-			.then((result) => schemas.validate(result, schemas.model.message))
-			.then((result) => {
-				t.equal(result.id, message.id, 'target message is correct');
-				t.equal(result.body, message.body, 'target message has correct body');
-				t.equal(result.author, message.author, 'target message has correct author');
-				t.notOk(result.parent, 'parent is absent');
-				t.equal(result.replies.length, 1, 'one child');
-				t.equal(result.replies[0].replies.length, 0, 'second level has no children');
-			});
-	}));
-
 	s.test('retrieves a deleted message', (t) => bootstrap({ depth: 3, users: 1 }).then((conditions) => {
 		var message = conditions.tails[0].parent;
 		var deleteAs = conditions.users.slice(-1)[0];
 		return Promise.props({
 			deletion: Message.delete(message.id, deleteAs.username),
 		})
-			.then(() => Message.getById(message.id, { depth: 2 }))
+			.then(() => Message.getById(message.id, { depth: 2, context: 10 }))
 			.then((result) => schemas.validate(result, schemas.model.message))
 			.then((result) => {
 				t.equal(result.id, message.id, 'message is our target');
@@ -78,7 +79,7 @@ suite('models/message.getById', (s) => {
 		return Promise.props({
 			deletion: Message.delete(message.replies[0].id, deleteAs.username),
 		})
-			.then(() => Message.getById(message.id, { depth: 2 }))
+			.then(() => Message.getById(message.id, { depth: 2, context: 10 }))
 			.then((result) => schemas.validate(result, schemas.model.message))
 			.then((result) => {
 				t.equal(result.id, message.id, 'target message is correct');
@@ -96,7 +97,7 @@ suite('models/message.getById', (s) => {
 		return Promise.props({
 			deletion: Message.delete(message.replies[0].id, deleteAs.username),
 		})
-			.then(() => Message.getById(message.id, { depth: 2 }))
+			.then(() => Message.getById(message.id, { depth: 2, context: 10 }))
 			.then((result) => schemas.validate(result, schemas.model.message))
 			.then((result) => {
 				t.equal(result.id, message.id, 'target message is correct');
@@ -108,21 +109,6 @@ suite('models/message.getById', (s) => {
 				t.equal(result.replies[0].author, '[deleted]', 'child shows deleted author');
 				t.equal(result.replies[0].replies[0].id, conditions.tails[0].id, 'child\'s child remains');
 				t.equal(result.replies[0].replies[0].author, conditions.tails[0].author, 'and is untouched');
-			});
-	}));
-
-	s.test('omits parent and child messages when depth is 0 and context is 0', (t) => bootstrap({ depth: 3 }).then((conditions) => {
-		var message = conditions.topics[0].replies[0];
-		return Message.getById(message.id, { depth: 0, context: 0 })
-			.then((result) => schemas.validate(result, schemas.model.message))
-			.then((result) => {
-				t.equal(result.id, message.id, 'target message is correct');
-				t.equal(result.body, message.body, 'target message has correct body');
-				t.equal(result.author, message.author, 'target message has correct author');
-				t.notOk(result.parent, 'parent is absent');
-				t.equal(result.level, 1, 'shows there is a parent above it');
-				t.notOk(result.replies, 'replies are absent');
-				t.equal(result.replyCount, 1, 'shows there is one reply');
 			});
 	}));
 });

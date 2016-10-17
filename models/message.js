@@ -38,8 +38,8 @@ exports.getById = function (id, options) {
 	var childLimit  = typeof options.maxReplies === 'undefined'  ? 20 : parseInt(options.maxReplies, 10);
 	var childSkip   = typeof options.skipReplies === 'undefined' ? 0 : parseInt(options.skipReplies, 10);
 
-	var childDepth  = typeof options.depth === 'undefined'   ?  1 : parseInt(options.depth, 10);
-	var parentDepth = typeof options.context === 'undefined' ? 10 : parseInt(options.context, 10);
+	var childDepth  = typeof options.depth === 'undefined'   ? 0 : parseInt(options.depth, 10);
+	var parentDepth = typeof options.context === 'undefined' ? 0 : parseInt(options.context, 10);
 
 	var mainQuery = stripIndent`
 		MATCH (message:Message { id: {id} })-[rmAuthor:CREATED_BY]->(mAuthor)
