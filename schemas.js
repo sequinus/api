@@ -50,13 +50,14 @@ exports.model.message = joi.object().keys({
 	deleted: exports.deleted,
 	deletedBy: exports.username.allow(null)
 		.when('deleted', { is: joi.string(),
-			then: joi.string().isoDate().required(),
+			then: exports.username,
 		}),
 	update_time: exports.create_time.required(), // not a typo, update_time is same as create_time
 	create_time: exports.create_time.required(),
 	author: exports.username.required(),
 	parent: joi.lazy(() => exports.model.message),
 	replies: joi.array().items(joi.lazy(() => exports.model.message)),
+	replyCount: joi.number().integer().min(0),
 });
 
 exports.response = {};

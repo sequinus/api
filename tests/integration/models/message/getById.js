@@ -111,16 +111,17 @@ suite('models/message.getById', (s) => {
 			});
 	}));
 
-	s.test('omits parent and child messages when depth is 0 and parents is 0', (t) => bootstrap({ depth: 3 }).then((conditions) => {
+	s.test('omits parent and child messages when depth is 0 and context is 0', (t) => bootstrap({ depth: 3 }).then((conditions) => {
 		var message = conditions.topics[0].replies[0];
-		return Message.getById(message.id, { depth: 0, parents: 0 })
+		return Message.getById(message.id, { depth: 0, context: 0 })
 			.then((result) => schemas.validate(result, schemas.model.message))
 			.then((result) => {
 				t.equal(result.id, message.id, 'target message is correct');
 				t.equal(result.body, message.body, 'target message has correct body');
 				t.equal(result.author, message.author, 'target message has correct author');
 				t.notOk(result.parent, 'parent is absent');
-				t.equal(result.replies.length, 0, 'no replies are present');
+				t.notOk(result.replies, 'replies are absent');
+				t.equal(result.replyCount, 1, 'shows there is one reply');
 			});
 	}));
 });

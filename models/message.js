@@ -6,6 +6,8 @@ var markdown    = require('../lib/markdown');
 var log         = require('../log')('models/message');
 var linkNodes   = require('../lib/link-nodes');
 
+var each = require('lodash/each');
+var flatten = require('lodash/flatten');
 var get = require('lodash/get');
 var find = require('lodash/find');
 
@@ -32,54 +34,75 @@ exports.MESSAGE_ID_LENGTH = 10;
 exports.getById = function (id, options) {
 	options = options || {};
 
-	var childDepth = typeof options.depth === 'undefined' ? 1 : parseInt(options.depth, 10);
-	var childQuery = '';
-	if (childDepth) {
-		childQuery = stripIndent`
-			OPTIONAL MATCH
-				(message)<-[rChild:IN_REPLY_TO*1..${childDepth}]-(child)-[rCAuthor:CREATED_BY]->(CAuthor)
-			OPTIONAL MATCH
-				(child)-[:DELETED_BY]->(cDeletedBy)
-		`;
-	}
+	var childSort   = { oldest: 'ASC', newest: 'DESC' }[options.sortReplies] || '';
+	var childLimit  = typeof options.maxReplies === 'undefined'  ? 20 : parseInt(options.maxReplies, 10);
+	var childSkip   = typeof options.skipReplies === 'undefined' ? 0 : parseInt(options.skipReplies, 10);
 
-	var parentDepth = typeof options.parents === 'undefined' ? 10 : parseInt(options.parents, 10);
-	var parentQuery = '';
-	if (parentDepth) {
-		parentQuery = stripIndent`
-			OPTIONAL MATCH (message)-[rParent:IN_REPLY_TO*1..${parentDepth}]->(parent)-[rPAuthor:CREATED_BY]->(pAuthor)
-			OPTIONAL MATCH (parent)-[:DELETED_BY]->(pDeletedBy)
-		`;
-	}
+	var childDepth  = typeof options.depth === 'undefined'   ?  1 : parseInt(options.depth, 10);
+	var parentDepth = typeof options.context === 'undefined' ? 10 : parseInt(options.context, 10);
 
-	var query = stripIndent`
-		MATCH (message:Message { id: {id} })-[rAuthor:CREATED_BY]->(author)
-		OPTIONAL MATCH (message)-[:DELETED_BY]->(deletedBy)
-		${childQuery}
-		${parentQuery}
-		RETURN *
-		${childQuery && 'ORDER BY child.create_time'}
+	var mainQuery = stripIndent`
+		MATCH (message:Message { id: {id} })-[rmAuthor:CREATED_BY]->(mAuthor)
+		OPTIONAL MATCH (message)-[rmDeletedBy:DELETED_BY]->(mDeletedBy)
+		OPTIONAL MATCH (message)<-[:IN_REPLY_TO]-(child)
+		RETURN message, rmAuthor, mAuthor, rmDeletedBy, mDeletedBy, count(child) as childCount
 	`;
 
-	var data = { id, childDepth, parentDepth };
+	var parentQuery = stripIndent`
+		MATCH (message:Message { id: {id} })-[rParent:IN_REPLY_TO*1..${parentDepth}]->(parent)-[rpAuthor:CREATED_BY]->(pAuthor)
+		OPTIONAL MATCH (parent)-[rpDeletedBy:DELETED_BY]->(pDeletedBy)
+		RETURN rParent, parent, rpAuthor, pAuthor, rpDeletedBy, pDeletedBy
+	`;
 
-	return neo4j.run(query, data)
+	var childQuery = stripIndent`
+		MATCH
+			(message:Message { id: {id} })<-[rChild:IN_REPLY_TO*1..${childDepth}]-(child)-[rcAuthor:CREATED_BY]->(cAuthor)
+		OPTIONAL MATCH
+			(child)-[rcDeletedBy:DELETED_BY]->(cDeletedBy)
+		RETURN rChild, child, rcAuthor, cAuthor, rcDeletedBy, cDeletedBy
+		ORDER BY child.create_time ${childSort} SKIP ${childSkip} LIMIT ${childLimit}
+	`;
+
+	var data = { id };
+
+	var pQueries = [ neo4j.run(mainQuery, data) ];
+	if (childDepth) pQueries.push(neo4j.run(childQuery, data));
+	if (parentDepth) pQueries.push(neo4j.run(parentQuery, data));
+
+	return Promise.all(pQueries)
+		.then(flatten)
 		.then((results) => {
 			linkNodes(results);
-			var mainNode = get(results, '[0].message');
+			// console.log(require('util').inspect(results[0], { colors: true, depth: 6 }));
+
+			// find our prime message node
+			var mainNode;
+			each(results, (row) => {
+				// if the message is the correct id and it has been altered by linkNodes, it's our message
+				if (row.message && row.message.properties.id === id && row.message.edgesTo) {
+					mainNode = row.message;
+					return false;
+				}
+			});
 			if (!mainNode) return null;
-			// console.log(require('util').inspect(results[0].message, { colors: true, depth: 6 }));
+
+			var childCount = get(results, '[0].childCount');
+			childCount = childCount ? childCount.toInt() : 0;
 
 			var message = mainNode.properties;
 			message.author = processMessageAuthor(mainNode);
+			message.replyCount = childCount;
 			if (message.deleted) {
 				message.deletedBy = processMessageDeletion(mainNode);
 				message.body = '_[deleted]_';
 				message.content = '<p><em>[deleted]</em></p>';
 				message.author = '[deleted]';
 			}
-			processMessageParents(message, mainNode);
-			processMessageChildren(message, mainNode);
+			if (parentDepth) processMessageParents(message, mainNode);
+			if (childDepth) processMessageChildren(message, mainNode);
+			else {
+				message.replies = undefined;
+			}
 			return message;
 		});
 };
