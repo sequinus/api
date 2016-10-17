@@ -120,6 +120,7 @@ suite('models/message.getById', (s) => {
 				t.equal(result.body, message.body, 'target message has correct body');
 				t.equal(result.author, message.author, 'target message has correct author');
 				t.notOk(result.parent, 'parent is absent');
+				t.equal(result.level, 1, 'shows there is a parent above it');
 				t.notOk(result.replies, 'replies are absent');
 				t.equal(result.replyCount, 1, 'shows there is one reply');
 			});

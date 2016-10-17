@@ -56,6 +56,7 @@ exports.model.message = joi.object().keys({
 	create_time: exports.create_time.required(),
 	author: exports.username.required(),
 	parent: joi.lazy(() => exports.model.message),
+	level: joi.number().integer().min(0),
 	replies: joi.array().items(joi.lazy(() => exports.model.message)),
 	replyCount: joi.number().integer().min(0),
 });

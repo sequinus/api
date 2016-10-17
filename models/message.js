@@ -45,7 +45,8 @@ exports.getById = function (id, options) {
 		MATCH (message:Message { id: {id} })-[rmAuthor:CREATED_BY]->(mAuthor)
 		OPTIONAL MATCH (message)-[rmDeletedBy:DELETED_BY]->(mDeletedBy)
 		OPTIONAL MATCH (message)<-[:IN_REPLY_TO]-(child)
-		RETURN message, rmAuthor, mAuthor, rmDeletedBy, mDeletedBy, count(child) as childCount
+		OPTIONAL MATCH (message)-[:IN_REPLY_TO*1..]->(parent)
+		RETURN message, rmAuthor, mAuthor, rmDeletedBy, mDeletedBy, count(child) as childCount, count(parent) as parentCount
 	`;
 
 	var parentQuery = stripIndent`
@@ -89,8 +90,12 @@ exports.getById = function (id, options) {
 			var childCount = get(results, '[0].childCount');
 			childCount = childCount ? childCount.toInt() : 0;
 
+			var parentCount = get(results, '[0].parentCount');
+			parentCount = parentCount ? parentCount.toInt() : 0;
+
 			var message = mainNode.properties;
 			message.author = processMessageAuthor(mainNode);
+			message.level = parentCount;
 			message.replyCount = childCount;
 			if (message.deleted) {
 				message.deletedBy = processMessageDeletion(mainNode);
