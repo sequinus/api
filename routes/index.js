@@ -47,3 +47,4 @@ router.delete('/user/:username', requiresAuth, require('./user/delete'));
 router.get('/message/:messageid', require('./message/get'));
 router.get('/slug/:slug', require('./message/slug'));
 router.post('/message', requiresAuth, require('./message/post'));
+router.delete('/message/:messageid', requiresAuth, require('./message/delete'));

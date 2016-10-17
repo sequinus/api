@@ -21,7 +21,7 @@ module.exports = exports = (req, res, next) => {
 	}).then(() => {
 		res.status(202);
 		res.json({
-			message: `User "${username}" has been deleted.`,
+			success: `User "${username}" has been deleted.`,
 		});
 	}).catch(next);
 };

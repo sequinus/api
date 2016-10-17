@@ -14,9 +14,8 @@ var makeToken = require('../../../../lib/sign-jwt');
 
 
 var DATE_TOLERANCE = 5;
-var ERROR_RESPONSE_SCHEMA = schemas.response.error;
 var VALID_RESPONSE_SCHEMA = joi.object().keys({
-	message: joi.string().required(),
+	success: joi.string().required(),
 });
 
 suite('DELETE /user', (s) => {
@@ -38,6 +37,7 @@ suite('DELETE /user', (s) => {
 				.set('Authorization', `Bearer ${TOKEN}`)
 				.then((res) => {
 					t.equal(res.status, 202, 'http accepted');
+					t.equal(res.body.success, `User "${USERNAME}" has been deleted.`);
 					return schemas.validate(res.body, VALID_RESPONSE_SCHEMA);
 				})
 			)
@@ -59,7 +59,7 @@ suite('DELETE /user', (s) => {
 				.set('Authorization', `Bearer ${TOKEN}`)
 				.then((res) => {
 					t.equal(res.status, 404, 'http not found');
-					return schemas.validate(res.body, ERROR_RESPONSE_SCHEMA);
+					return schemas.validate(res.body, schemas.response.error);
 				})
 			)
 	);
@@ -71,11 +71,11 @@ suite('DELETE /user', (s) => {
 			() => User.delete('notme')
 		)
 			.then((deletedUser) => agent
-				.get('/user/' + deletedUser.username)
+				.delete('/user/' + deletedUser.username)
 				.set('Authorization', `Bearer ${TOKEN}`)
 				.then((res) => {
 					t.equal(res.status, 404, 'http not found');
-					return schemas.validate(res.body, ERROR_RESPONSE_SCHEMA);
+					return schemas.validate(res.body, schemas.response.error);
 				})
 			)
 	);
@@ -84,7 +84,7 @@ suite('DELETE /user', (s) => {
 		agent.delete('/user/nobody')
 			.then((res) => {
 				t.equal(res.status, 401, 'http unauthorized');
-				return schemas.validate(res.body, ERROR_RESPONSE_SCHEMA);
+				return schemas.validate(res.body, schemas.response.error);
 			})
 	);
 
@@ -97,7 +97,7 @@ suite('DELETE /user', (s) => {
 				.set('Authorization', `Bearer ${TOKEN}`)
 				.then((res) => {
 					t.equal(res.status, 403, 'http unauthorized');
-					return schemas.validate(res.body, ERROR_RESPONSE_SCHEMA);
+					return schemas.validate(res.body, schemas.response.error);
 				})
 			)
 		);
