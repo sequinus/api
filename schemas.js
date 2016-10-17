@@ -14,7 +14,7 @@ exports.validate = function (value, schema) {
 			return result;
 		}, (err) => {
 			log.trace(err, 'Invalidated schema');
-			throw err;
+			throw Object.create(err);
 		});
 };
 
