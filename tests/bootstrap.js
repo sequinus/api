@@ -98,7 +98,7 @@ exports.createMessage = function (user, parent, settings) {
 	} else if (typeof user === 'string') {
 		username = user;
 	} else if (typeof user === 'number' && conditions) {
-		username = conditions.users[user % (conditions.users.length - 1)].username;
+		username = conditions.users[user % Math.max(conditions.users.length - 1, 1)].username;
 	} else if (conditions) {
 		username = random.from(conditions.users).username;
 	} else {
