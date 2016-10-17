@@ -152,7 +152,7 @@ exports.createChain = function (depth, messages, parent) {
 
 	function addMessage (parent, level) {
 		if (level + 1 > depth) return Promise.resolve(parent);
-		return exports.createMessage(null, parent, messages && messages[level])
+		return exports.createMessage(level, parent, messages && messages[level])
 			.then((message) => {
 				if (!parent) conditions.topics.push(message);
 				return addMessage(message, level + 1);
