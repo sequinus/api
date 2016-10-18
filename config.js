@@ -36,6 +36,13 @@ var appConfig = rc(pkg.name.replace(/[.-]/g, ''), {
 			pass: 'test',
 		},
 	},
+
+	messages: {
+		metadata: {
+			maxEntries: 10, // no more than 10 metadata records per message
+			maxSize: 10000, // no more than 10k json per metadata record
+		},
+	},
 });
 
 var envConfig = rc(pkg.name.replace(/[.-]/g, '') + '_' + envName, {});

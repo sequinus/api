@@ -124,7 +124,12 @@ exports.createMessage = function (user, parent, settings) {
 			parent.replies.push(message);
 			message.parent = parent;
 		}
-		return message;
+
+		return Promise.resolve(opts.metadata ? Message.updateMetadata(message.id, opts.metadata) : [])
+			.then((metadata) => {
+				message.metadata = metadata;
+				return message;
+			});
 	});
 };
 

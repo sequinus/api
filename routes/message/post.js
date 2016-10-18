@@ -1,8 +1,9 @@
 
+var config    = require('../../config');
 var Promise   = require('bluebird');
 var boom      = require('boom');
-var joi       = require('joi');
 var schemas   = require('../../schemas');
+var joi       = schemas.joi;
 var Message   = require('../../models/message');
 var markdown  = require('../../lib/markdown');
 
@@ -11,6 +12,7 @@ var messagePostSchema = joi.object().keys({
 	private: joi.boolean(),
 	inReplyTo: schemas.messageId,
 	slug: schemas.messageSlug,
+	metadata: joi.array().max(config.messages.metadata.maxEntries).items(schemas.messageMetadata),
 });
 
 module.exports = exports = function postMessage (req, res, next) {
@@ -56,7 +58,17 @@ module.exports = exports = function postMessage (req, res, next) {
 				slug: body.slug,
 			};
 
-			return Message.create(options);
+			var pMessage = Message.create(options);
+
+			if (body.metadata) {
+				return pMessage.then((message) =>
+					Message.updateMetadata(message.id, body.metadata).then((metadata) => {
+						message.metadata = metadata;
+						return message;
+					}));
+			}
+
+			return pMessage;
 		}
 	)).then((message) => {
 		res.status(201);

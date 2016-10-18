@@ -6,30 +6,19 @@ var markdown    = require('../lib/markdown');
 var log         = require('../log')('models/message');
 var linkNodes   = require('../lib/link-nodes');
 
-var each = require('lodash/each');
+var each    = require('lodash/each');
 var flatten = require('lodash/flatten');
-var get = require('lodash/get');
-var find = require('lodash/find');
+var get     = require('lodash/get');
+var find    = require('lodash/find');
+var map     = require('lodash/map');
 
-var QUERY_MESSAGE_TOPIC = stripIndent`
-	MATCH (author:User { username: {username} })
-	CREATE
-		(message:Message {message}),
-		(message)-[:CREATED_BY]->(author)
-	RETURN message, author
-`;
-
-var QUERY_MESSAGE_REPLY = stripIndent`
-	MATCH (author:User { username: {username} }), (parent:Message { id: {inReplyTo} })
-	CREATE
-		(message:Message {message}),
-		(message)-[:CREATED_BY]->(author),
-		(message)-[:IN_REPLY_TO]->(parent)
-	RETURN message, author
-`;
-
-
-exports.MESSAGE_ID_LENGTH = 10;
+function decodeMetadata (md) {
+	return {
+		type: md.type,
+		value: md.json ? JSON.parse(md.value) : md.value,
+		create_time: md.create_time,
+	};
+}
 
 exports.getById = function (id, options) {
 	options = options || {};
@@ -177,6 +166,25 @@ exports.getBySlug = function (slug) {
 };
 
 
+var QUERY_CREATE_MESSAGE_TOPIC = stripIndent`
+	MATCH (author:User { username: {username} })
+	CREATE
+		(message:Message {message}),
+		(message)-[:CREATED_BY]->(author)
+	RETURN message, author
+`;
+
+var QUERY_CREATE_MESSAGE_REPLY = stripIndent`
+	MATCH (author:User { username: {username} }), (parent:Message { id: {inReplyTo} })
+	CREATE
+		(message:Message {message}),
+		(message)-[:CREATED_BY]->(author),
+		(message)-[:IN_REPLY_TO]->(parent)
+	RETURN message, author
+`;
+
+exports.MESSAGE_ID_LENGTH = 10;
+
 exports.create = function (options) {
 	var username = options.username;
 	var body = options.body;
@@ -203,7 +211,7 @@ exports.create = function (options) {
 		create_time: (new Date()).toISOString(),
 	};
 
-	var query = inReplyTo ? QUERY_MESSAGE_REPLY : QUERY_MESSAGE_TOPIC;
+	var query = inReplyTo ? QUERY_CREATE_MESSAGE_REPLY : QUERY_CREATE_MESSAGE_TOPIC;
 	var data = { username, message: properties, inReplyTo };
 
 	var transaction = neo4j.transaction();
@@ -216,6 +224,55 @@ exports.create = function (options) {
 
 			return message;
 		}));
+};
+
+exports.updateMetadata = function (id, metadata) {
+	var deleteQuery = stripIndent`
+		MATCH (message:Message { id: {id} })<-[:METADATA_FOR]-(mdNodes:Metadata)
+		DETACH DELETE mdNodes
+	`;
+
+	var insertQuery = stripIndent`
+		UNWIND {metadata} AS map
+		MATCH (message:Message { id: {id} })
+		CREATE (mdNodes:Metadata)-[:METADATA_FOR]->(message)
+		SET mdNodes = map
+		RETURN mdNodes
+		ORDER BY mdNodes.index
+	`;
+
+	if (!Array.isArray(metadata)) return Promise.reject(new Error('metadata must be an array'));
+
+	metadata = map(metadata, (original, i) => {
+		var md = {
+			type: original.type,
+			create_time: (new Date()).toISOString(),
+			index: i,
+		};
+
+		if (typeof original.value === 'object') {
+			md.value = JSON.stringify(original.value);
+			md.json = true;
+		} else {
+			md.value = original.value;
+		}
+
+		return md;
+	});
+
+	var data = { id, metadata };
+
+	var transaction = neo4j.transaction();
+
+	// first delete the old nodes
+	return transaction.run(deleteQuery, data)
+		// now add the new ones
+		.then(() => transaction.run(insertQuery, data))
+		.then((results) => transaction.commit()
+
+			// map the data back to the original format
+			.then(() => map(results, (row) => decodeMetadata(get(row, 'mdNodes.properties'))))
+		);
 };
 
 exports.delete = function (id, username) {

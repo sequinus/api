@@ -171,4 +171,36 @@ suite('POST /message', (s) => {
 			});
 	}));
 
+	s.only('post a topic with metadata', (t) => bootstrap({ users: 1 }).then((conditions) => {
+		var user = conditions.users[0];
+		return agent
+			.post('/message')
+			.set('Authorization', `Bearer ${user.token}`)
+			.send({
+				body: 'KITTIES!',
+				metadata: [
+					{ type: 'image',       value: { url: 'https://placekitten.com/500/500' } },
+					{ type: 'description', value: 'Aww, it\'s a kitten.' },
+				],
+			})
+			.then((res) => {
+				t.equal(res.status, 201, 'http created');
+				return schemas.validate(res.body, VALID_RESPONSE_SCHEMA);
+			})
+			.then(() => neo4j.run('MATCH (m:Message)<-[r:METADATA_FOR]-(md:Metadata) RETURN md ORDER BY md.index'))
+			.then((results) => {
+				results = results.map((row) => row.md.properties);
+				if (t.equal(results.length, 2, 'found two metadata entries')) {
+					t.equal(results[0].type, 'image', 'first item is an image');
+					t.equal(results[1].type, 'description', 'second item is a description');
+					t.ok(results[0].json, 'first item is json encoded');
+					t.deepEqual(results[0].value, '{"url":"https://placekitten.com/500/500"}', 'image contents match');
+					t.deepEqual(results[1].value, 'Aww, it\'s a kitten.', 'description contents match');
+
+					t.dateNear(results[0].create_time, new Date(), DATE_TOLERANCE, 'first item create time is set');
+					t.dateNear(results[1].create_time, new Date(), DATE_TOLERANCE, 'second item create time is set');
+				}
+			});
+	}));
+
 });

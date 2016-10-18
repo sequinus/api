@@ -29,6 +29,7 @@
     "express-jwt": "~5.1.0",
     "highlight.js": "~9.7.0",
     "joi": "~9.1.0",
+    "json-size": "~1.0.0",
     "jsonwebtoken": "~7.1.9",
     "lodash": "~4.16.4",
     "lorem-ipsum": "~1.0.3",

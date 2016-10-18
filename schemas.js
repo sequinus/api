@@ -1,7 +1,40 @@
 
-var joi     = require('joi');
-var Promise = require('bluebird');
-var log     = require('./log')('schemas');
+var config   = require('./config');
+var Promise  = require('bluebird');
+var log      = require('./log')('schemas');
+var jsonSize = require('json-size');
+
+var Joi = require('joi');
+var joi = Joi.extend({
+	base: Joi.object(),
+	name: 'object',
+	language: {
+		jsonMax: 'cannot be larger than {{maximum}} bytes when JSON serialized',
+	},
+	rules: [
+		{
+			name: 'jsonMax',
+			params: {
+				max: Joi.alternatives([ Joi.number().required() ]),
+			},
+			validate (params, value, state, options) {
+				var size = jsonSize(value);
+
+				if (size > params.max) {
+					return this.createError('object.jsonMax', {
+						value: JSON.stringify(value).substr(0, 50) + ' ...',
+						totalSize: size,
+						maximum: params.max,
+					}, state, options);
+				}
+
+				return value;
+			},
+		},
+	],
+});
+
+exports.joi = joi;
 
 exports.isValid = function (value, schema) {
 	return !joi.validate(value, schema).error;
@@ -18,17 +51,24 @@ exports.validate = function (value, schema) {
 		});
 };
 
-exports.username       = joi.string().min(3, 'utf8').max(30, 'utf8').regex(/^[a-zA-Z0-9_-]+$/).allow('[deleted]');
-exports.displayname    = joi.string().trim().min(1, 'utf8').max(100, 'utf8');
-exports.password       = joi.string().min(8);
-exports.email          = joi.string().trim().email().allow(false);
-exports.deleted        = joi.string().isoDate().allow(false);
-exports.create_time    = joi.string().isoDate();
+exports.username        = joi.string().min(3, 'utf8').max(30, 'utf8').regex(/^[a-zA-Z0-9_-]+$/).allow('[deleted]');
+exports.displayname     = joi.string().trim().min(1, 'utf8').max(100, 'utf8');
+exports.password        = joi.string().min(8);
+exports.email           = joi.string().trim().email().allow(false);
+exports.deleted         = joi.string().isoDate().allow(false);
+exports.create_time     = joi.string().isoDate();
 
-exports.messageId      = joi.string().alphanum().length(10);
-exports.messageBody    = joi.string().trim().min(1, 'utf8').max(400, 'utf8');
-exports.messageContent = joi.string().trim().min(1, 'utf8');
-exports.messageSlug    = joi.string().trim().min(1, 'utf8').max(100, 'utf8').regex(/^[a-zA-Z0-9_-]+$/);
+exports.messageId       = joi.string().alphanum().length(10);
+exports.messageBody     = joi.string().trim().min(1, 'utf8').max(400, 'utf8');
+exports.messageContent  = joi.string().trim().min(1, 'utf8');
+exports.messageSlug     = joi.string().trim().min(1, 'utf8').max(100, 'utf8').regex(/^[a-zA-Z0-9_-]+$/);
+exports.messageMetadata = joi.object().keys({
+	type: joi.string().alphanum().min(2).required(),
+	value: joi.alternatives(
+		joi.object().jsonMax(config.messages.metadata.maxSize),
+		joi.string().max(config.messages.metadata.maxSize)
+	),
+});
 
 exports.jwtToken       = joi.string().regex(/^[a-zA-Z0-9\-_]+?\.[a-zA-Z0-9\-_]+?\.([a-zA-Z0-9\-_]+)?$/);
 
@@ -59,6 +99,9 @@ exports.model.message = joi.object().keys({
 	level: joi.number().integer().min(0),
 	replies: joi.array().items(joi.lazy(() => exports.model.message)),
 	replyCount: joi.number().integer().min(0),
+	metadata: joi.array().max(config.messages.metadata.maxEntries).items(exports.messageMetadata.keys({
+		create_time: exports.create_time.required(),
+	})),
 });
 
 exports.response = {};
