@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node www.js | bunyan",
     "test": "LOG_LEVEL=fatal tap tests/unit tests/integration",
+    "cover": "LOG_LEVEL=fatal tap --coverage tests/unit tests/integration",
     "lint": "eslint ./",
     "watch": "nodemon www.js | bunyan"
   },
@@ -52,5 +53,14 @@
     "supertest-as-promised": "~4.0.0",
     "tap": "~7.1.2",
     "tapdate": "1.0.1"
+  },
+  "nyc": {
+    "exclude": [
+      "tests"
+    ],
+    "reporter": [
+      "lcov",
+      "text"
+    ]
   }
 }
