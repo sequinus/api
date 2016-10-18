@@ -35,21 +35,23 @@ exports.getById = function (id, options) {
 		OPTIONAL MATCH (message)-[rmDeletedBy:DELETED_BY]->(mDeletedBy)
 		OPTIONAL MATCH (message)<-[:IN_REPLY_TO]-(child)
 		OPTIONAL MATCH (message)-[:IN_REPLY_TO*1..]->(parent)
-		RETURN message, rmAuthor, mAuthor, rmDeletedBy, mDeletedBy, count(child) as childCount, count(parent) as parentCount
+		OPTIONAL MATCH (message)<-[rmMetadata:METADATA_FOR*1..]-(mMetadata:Metadata)
+		RETURN message, rmAuthor, mAuthor, rmDeletedBy, mDeletedBy, rmMetadata, mMetadata, count(child) as childCount, count(parent) as parentCount
 	`;
 
 	var parentQuery = stripIndent`
 		MATCH (message:Message { id: {id} })-[rParent:IN_REPLY_TO*1..${parentDepth}]->(parent)-[rpAuthor:CREATED_BY]->(pAuthor)
 		OPTIONAL MATCH (parent)-[rpDeletedBy:DELETED_BY]->(pDeletedBy)
-		RETURN rParent, parent, rpAuthor, pAuthor, rpDeletedBy, pDeletedBy
+		OPTIONAL MATCH (parent)<-[rpMetadata:METADATA_FOR*1..]-(pMetadata:Metadata)
+		RETURN rParent, parent, rpAuthor, pAuthor, rpDeletedBy, pDeletedBy, rpMetadata, pMetadata
 	`;
 
 	var childQuery = stripIndent`
 		MATCH
 			(message:Message { id: {id} })<-[rChild:IN_REPLY_TO*1..${childDepth}]-(child)-[rcAuthor:CREATED_BY]->(cAuthor)
-		OPTIONAL MATCH
-			(child)-[rcDeletedBy:DELETED_BY]->(cDeletedBy)
-		RETURN rChild, child, rcAuthor, cAuthor, rcDeletedBy, cDeletedBy
+		OPTIONAL MATCH (child)-[rcDeletedBy:DELETED_BY]->(cDeletedBy)
+		OPTIONAL MATCH (child)<-[rcMetadata:METADATA_FOR*1..]-(cMetadata:Metadata)
+		RETURN rChild, child, rcAuthor, cAuthor, rcDeletedBy, cDeletedBy, rcMetadata, cMetadata
 		ORDER BY child.create_time ${childSort} SKIP ${childSkip} LIMIT ${childLimit}
 	`;
 
@@ -84,6 +86,7 @@ exports.getById = function (id, options) {
 
 			var message = mainNode.properties;
 			message.author = processMessageAuthor(mainNode);
+			message.metadata = processMessageMetadata(mainNode);
 			message.level = parentCount;
 			message.replyCount = childCount;
 			if (message.deleted) {
@@ -108,6 +111,14 @@ function processMessageAuthor (node) {
 	return authorNode.properties.username;
 }
 
+function processMessageMetadata (node) {
+	return node.edgesFrom.map((rel) => {
+		if (rel.type !== 'METADATA_FOR') return null;
+		var metadataNode = rel.startNode;
+		return metadataNode && decodeMetadata(metadataNode.properties);
+	}).filter(Boolean);
+}
+
 function processMessageDeletion (node) {
 	var deletionNode = find(node.edgesTo, (rel) => rel.type === 'DELETED_BY');
 	if (!deletionNode) return null;
@@ -122,6 +133,7 @@ function processMessageParents (model, node) {
 	var parentModel = parentNode.properties;
 	model.parent = parentModel;
 	parentModel.author = processMessageAuthor(parentNode);
+	parentModel.metadata = processMessageMetadata(parentNode);
 	if (parentModel.deleted) {
 		parentModel.deletedBy = processMessageDeletion(parentNode);
 		parentModel.body = '_[deleted]_';
@@ -137,6 +149,7 @@ function processMessageChildren (model, node) {
 		var childNode = rel.startNode;
 		var childModel = childNode.properties;
 		childModel.author = processMessageAuthor(childNode);
+		childModel.metadata = processMessageMetadata(childNode);
 		processMessageChildren(childModel, childNode);
 		if (childModel.deleted) {
 			childModel.deletedBy = processMessageDeletion(childNode);

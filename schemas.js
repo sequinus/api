@@ -66,7 +66,8 @@ exports.messageMetadata = joi.object().keys({
 	type: joi.string().alphanum().min(2).required(),
 	value: joi.alternatives(
 		joi.object().jsonMax(config.messages.metadata.maxSize),
-		joi.string().max(config.messages.metadata.maxSize)
+		joi.string().max(config.messages.metadata.maxSize),
+		joi.number()
 	),
 });
 

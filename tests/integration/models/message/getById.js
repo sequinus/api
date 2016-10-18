@@ -54,6 +54,33 @@ suite('models/message.getById', (s) => {
 			});
 	}));
 
+	s.test('returns metadata at all layers', (t) => bootstrap({ users: 3 }).then(() => {
+		t.plan(9);
+		var messageSettings = [
+			{ metadata: [ { type: 'level', value: 1 } ] },
+			{ metadata: [ { type: 'level', value: 2 } ] },
+			{ metadata: [ { type: 'level', value: 3 } ] },
+		];
+
+		function assertMD (input, level) {
+			if (t.equal(input.length, 1, `Level ${level} has metadata`)) {
+				t.equal(input[0].type, 'level', `Level ${level} type correct`);
+				t.equal(input[0].value, level, `Level ${level} value correct`);
+			}
+		}
+
+		return (bootstrap.createChain(3, messageSettings)).then((tail) => {
+			var message = tail.parent;
+			return Message.getById(message.id, { depth: 10, context: 10 })
+				.then((result) => schemas.validate(result, schemas.model.message))
+				.then((result) => {
+					assertMD(result.metadata, 2);
+					assertMD(result.parent.metadata, 1);
+					assertMD(result.replies[0].metadata, 3);
+				});
+		});
+	}));
+
 	s.test('retrieves a deleted message', (t) => bootstrap({ depth: 3, users: 1 }).then((conditions) => {
 		var message = conditions.tails[0].parent;
 		var deleteAs = conditions.users.slice(-1)[0];

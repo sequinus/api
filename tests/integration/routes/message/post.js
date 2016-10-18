@@ -171,7 +171,7 @@ suite('POST /message', (s) => {
 			});
 	}));
 
-	s.only('post a topic with metadata', (t) => bootstrap({ users: 1 }).then((conditions) => {
+	s.test('post a topic with metadata', (t) => bootstrap({ users: 1 }).then((conditions) => {
 		var user = conditions.users[0];
 		return agent
 			.post('/message')
