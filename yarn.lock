@@ -799,6 +799,24 @@ escope@^3.6.0:
     esrecurse "^4.1.0"
     estraverse "^4.1.1"
 
+eslint-config-chiper@*:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/eslint-config-chiper/-/eslint-config-chiper-2.0.1.tgz#9eff8c15f80897706d74bbf391180a5a6c313667"
+
+eslint-plugin-node@~2.1.2:
+  version "2.1.3"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-node/-/eslint-plugin-node-2.1.3.tgz#3816fda8b6441732e4ecb351f9930a2a9b5fabd3"
+  dependencies:
+    ignore "^3.0.11"
+    minimatch "^3.0.2"
+    object-assign "^4.0.1"
+    resolve "^1.1.7"
+    semver "5.3.0"
+
+eslint-plugin-promise@~3.3.0:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-promise/-/eslint-plugin-promise-3.3.0.tgz#20a1ef58b4243ffdaef82ee9360a02353a7cca89"
+
 eslint@~3.8.1:
   version "3.8.1"
   resolved "https://registry.yarnpkg.com/eslint/-/eslint-3.8.1.tgz#7d02db44cd5aaf4fa7aa489e1f083baa454342ba"
@@ -836,24 +854,6 @@ eslint@~3.8.1:
     table "^3.7.8"
     text-table "~0.2.0"
     user-home "^2.0.0"
-
-eslint-config-chiper@*:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/eslint-config-chiper/-/eslint-config-chiper-2.0.0.tgz#16ce5271a643389026695aaaea3ec2b56120b0d7"
-
-eslint-plugin-cah@~0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-cah/-/eslint-plugin-cah-0.2.0.tgz#ba04011a95be532c6b44478554e50aa13ddef72b"
-
-eslint-plugin-node@~2.1.2:
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-node/-/eslint-plugin-node-2.1.3.tgz#3816fda8b6441732e4ecb351f9930a2a9b5fabd3"
-  dependencies:
-    ignore "^3.0.11"
-    minimatch "^3.0.2"
-    object-assign "^4.0.1"
-    resolve "^1.1.7"
-    semver "5.3.0"
 
 espree@^3.3.1:
   version "3.3.2"

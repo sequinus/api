@@ -1,4 +1,5 @@
 
+var Promise   = require('bluebird');
 var boom      = require('boom');
 var schemas   = require('../../schemas');
 var User      = require('../../models/user');

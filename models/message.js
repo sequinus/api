@@ -1,4 +1,5 @@
 
+var Promise     = require('bluebird');
 var neo4j       = require('../io/neo4j');
 var random      = require('../lib/random');
 var stripIndent = require('common-tags/lib/stripIndent');
