@@ -1,4 +1,4 @@
-/* eslint consistent-this:0 */
+/* eslint consistent-this:0, prefer-rest-params:0, prefer-spread:0 */
 'use strict';
 
 var Promise = require('bluebird');

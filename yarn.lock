@@ -30,8 +30,8 @@ ajv-keywords@^1.0.0:
   resolved "https://registry.yarnpkg.com/ajv-keywords/-/ajv-keywords-1.1.1.tgz#02550bc605a3e576041565628af972e06c549d50"
 
 ajv@^4.7.0:
-  version "4.7.7"
-  resolved "https://registry.yarnpkg.com/ajv/-/ajv-4.7.7.tgz#4980d5f65ce90a2579532eec66429f320dea0321"
+  version "4.8.0"
+  resolved "https://registry.yarnpkg.com/ajv/-/ajv-4.8.0.tgz#011df5c4a08edb29574a477269afb15a6f97abe5"
   dependencies:
     co "^4.6.0"
     json-stable-stringify "^1.0.1"
@@ -297,7 +297,7 @@ body-parser@~1.15.2:
     raw-body "~2.1.7"
     type-is "~1.6.13"
 
-boom:
+boom@~4.2.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/boom/-/boom-4.2.0.tgz#c1a74174b11fbba223f6162d4fd8851a1b82a536"
   dependencies:
@@ -336,11 +336,11 @@ builtin-modules@^1.0.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/builtin-modules/-/builtin-modules-1.1.1.tgz#270f076c5a72c02f5b65a47df94c5fe3a278892f"
 
-bunyan@^1.8.1, bunyan@~1.8.1:
-  version "1.8.1"
-  resolved "https://registry.yarnpkg.com/bunyan/-/bunyan-1.8.1.tgz#68c6a4a502d5620bc9f72d6736810c1b1898097f"
+bunyan@^1.8.1, bunyan@~1.8.3:
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/bunyan/-/bunyan-1.8.3.tgz#a499e8a6c991b4500f93af2d5dad3711dea5381e"
   optionalDependencies:
-    dtrace-provider "~0.6"
+    dtrace-provider "~0.7"
     moment "^2.10.6"
     mv "~2"
     safe-json-stringify "~1"
@@ -671,19 +671,19 @@ doctrine@^1.2.2:
     esutils "^2.0.2"
     isarray "^1.0.0"
 
-dtrace-provider@~0.6:
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/dtrace-provider/-/dtrace-provider-0.6.0.tgz#0b078d5517937d873101452d9146737557b75e51"
+dtrace-provider@~0.7:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/dtrace-provider/-/dtrace-provider-0.7.0.tgz#9ac6d3eb78ffbe90385063e6d14dfe7bc377005d"
   dependencies:
-    nan "^2.0.8"
+    nan "^2.3.3"
 
 duplexer@~0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/duplexer/-/duplexer-0.1.1.tgz#ace6ff808c1ce66b57d1ebf97977acb02334cfc1"
 
 duplexify@^3.2.0:
-  version "3.4.5"
-  resolved "https://registry.yarnpkg.com/duplexify/-/duplexify-3.4.5.tgz#0e7e287a775af753bf57e6e7b7f21f183f6c3a53"
+  version "3.4.6"
+  resolved "https://registry.yarnpkg.com/duplexify/-/duplexify-3.4.6.tgz#1e586a13028caf31d5144a059813f9b071fec557"
   dependencies:
     end-of-stream "1.0.0"
     inherits "^2.0.1"
@@ -799,9 +799,9 @@ escope@^3.6.0:
     esrecurse "^4.1.0"
     estraverse "^4.1.1"
 
-eslint:
-  version "3.8.0"
-  resolved "https://registry.yarnpkg.com/eslint/-/eslint-3.8.0.tgz#4fbbf6833d66654860c23a099c47a0f086de34b7"
+eslint@~3.8.1:
+  version "3.8.1"
+  resolved "https://registry.yarnpkg.com/eslint/-/eslint-3.8.1.tgz#7d02db44cd5aaf4fa7aa489e1f083baa454342ba"
   dependencies:
     chalk "^1.1.3"
     concat-stream "^1.4.6"
@@ -837,9 +837,9 @@ eslint:
     text-table "~0.2.0"
     user-home "^2.0.0"
 
-eslint-config-chiper@^1.0.0:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/eslint-config-chiper/-/eslint-config-chiper-1.0.1.tgz#fd3e1098a3351a9a4a7eb98d3924637a50991bf3"
+eslint-config-chiper@*:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/eslint-config-chiper/-/eslint-config-chiper-2.0.0.tgz#16ce5271a643389026695aaaea3ec2b56120b0d7"
 
 eslint-plugin-cah@~0.2.0:
   version "0.2.0"
@@ -1464,6 +1464,10 @@ is-fullwidth-code-point@^1.0.0:
   dependencies:
     number-is-nan "^1.0.0"
 
+is-fullwidth-code-point@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/is-fullwidth-code-point/-/is-fullwidth-code-point-2.0.0.tgz#a3b30a5c4f199183167aaab93beefae3ddfb654f"
+
 is-glob@^2.0.0, is-glob@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/is-glob/-/is-glob-2.0.1.tgz#d096f926a3ded5600f3fdfd91198cb0888c2d863"
@@ -1580,8 +1584,8 @@ istanbul-lib-hook@^1.0.0-alpha.4:
     append-transform "^0.3.0"
 
 istanbul-lib-instrument@^1.1.0-alpha.3:
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/istanbul-lib-instrument/-/istanbul-lib-instrument-1.1.3.tgz#66d5353d1f592b9e34d1cf9acda9c3f1ab509696"
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/istanbul-lib-instrument/-/istanbul-lib-instrument-1.1.4.tgz#95be56e5c321456ffdfddc925ad4dcfc28edab9c"
   dependencies:
     babel-generator "^6.11.3"
     babel-template "^6.9.0"
@@ -1611,8 +1615,8 @@ istanbul-lib-source-maps@^1.0.0-alpha.10:
     source-map "^0.5.3"
 
 istanbul-reports@^1.0.0-alpha.8:
-  version "1.0.0-alpha.8"
-  resolved "https://registry.yarnpkg.com/istanbul-reports/-/istanbul-reports-1.0.0-alpha.8.tgz#094830f4c7f3d482e466aac8abda2495f9ae4689"
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/istanbul-reports/-/istanbul-reports-1.0.0.tgz#24b4eb2b1d29d50f103b369bd422f6e640aa0777"
   dependencies:
     handlebars "^4.0.3"
 
@@ -1635,9 +1639,9 @@ joi@^6.10.1, joi@~6.10.1:
     moment "2.x.x"
     topo "1.x.x"
 
-joi@~9.1.0:
-  version "9.1.1"
-  resolved "https://registry.yarnpkg.com/joi/-/joi-9.1.1.tgz#357a04c3ad424abcb9790829be8c01a131d93500"
+joi@~9.2.0:
+  version "9.2.0"
+  resolved "https://registry.yarnpkg.com/joi/-/joi-9.2.0.tgz#3385ac790192130cbe230e802ec02c9215bbfeda"
   dependencies:
     hoek "4.x.x"
     isemail "2.x.x"
@@ -1672,7 +1676,7 @@ json-schema@0.2.3:
   version "0.2.3"
   resolved "https://registry.yarnpkg.com/json-schema/-/json-schema-0.2.3.tgz#b480c892e59a2f05954ce727bd3f2a4e882f9e13"
 
-json-size:
+json-size@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/json-size/-/json-size-1.0.0.tgz#4636046df470d87ffbe6c137c764ed0efcd5b588"
   dependencies:
@@ -1696,22 +1700,22 @@ jsonpointer@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/jsonpointer/-/jsonpointer-4.0.0.tgz#6661e161d2fc445f19f98430231343722e1fcbd5"
 
-jsonwebtoken:
-  version "7.1.9"
-  resolved "https://registry.yarnpkg.com/jsonwebtoken/-/jsonwebtoken-7.1.9.tgz#847804e5258bec5a9499a8dc4a5e7a3bae08d58a"
-  dependencies:
-    joi "^6.10.1"
-    jws "^3.1.3"
-    lodash.once "^4.0.0"
-    ms "^0.7.1"
-    xtend "^4.0.1"
-
 jsonwebtoken@~6.2.0:
   version "6.2.0"
   resolved "https://registry.yarnpkg.com/jsonwebtoken/-/jsonwebtoken-6.2.0.tgz#8233154c6cd9fd8760ad0f5a563f539dd391f2f9"
   dependencies:
     joi "~6.10.1"
     jws "^3.0.0"
+    ms "^0.7.1"
+    xtend "^4.0.1"
+
+jsonwebtoken@~7.1.9:
+  version "7.1.9"
+  resolved "https://registry.yarnpkg.com/jsonwebtoken/-/jsonwebtoken-7.1.9.tgz#847804e5258bec5a9499a8dc4a5e7a3bae08d58a"
+  dependencies:
+    joi "^6.10.1"
+    jws "^3.1.3"
+    lodash.once "^4.0.0"
     ms "^0.7.1"
     xtend "^4.0.1"
 
@@ -1920,9 +1924,9 @@ markdown-it-link-target@~1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/markdown-it-link-target/-/markdown-it-link-target-1.0.2.tgz#d2fd45575f35148e9c5e235eb787abb6f9460a67"
 
-markdown-it@~8.0.0:
-  version "8.0.0"
-  resolved "https://registry.yarnpkg.com/markdown-it/-/markdown-it-8.0.0.tgz#e66255497a0e409e816fbc67807975f4f26f6f82"
+markdown-it@~8.0.1:
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/markdown-it/-/markdown-it-8.0.1.tgz#ff60e2103d17896cb6c57407baa9766f916495cb"
   dependencies:
     argparse "^1.0.7"
     entities "~1.1.1"
@@ -2041,7 +2045,7 @@ mv@~2:
     ncp "~2.0.0"
     rimraf "~2.4.0"
 
-nan@^2.0.8, nan@^2.3.0:
+nan@^2.3.0, nan@^2.3.3:
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.4.0.tgz#fb3c59d45fe4effe215f0b890f8adf6eb32d2232"
 
@@ -2407,7 +2411,11 @@ punycode@^1.3.2:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-1.4.1.tgz#c0d5a63b2718800ad8e1eb0fa5269c84dd41845e"
 
-qs@^6.1.0, qs@~6.2.0:
+qs@^6.1.0:
+  version "6.3.0"
+  resolved "https://registry.yarnpkg.com/qs/-/qs-6.3.0.tgz#f403b264f23bc01228c74131b407f18d5ea5d442"
+
+qs@~6.2.0:
   version "6.2.1"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.2.1.tgz#ce03c5ff0935bc1d9d69a9f14cbd18e568d67625"
 
@@ -2816,6 +2824,13 @@ string-width@^1.0.1:
     is-fullwidth-code-point "^1.0.0"
     strip-ansi "^3.0.0"
 
+string-width@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/string-width/-/string-width-2.0.0.tgz#635c5436cc72a6e0c387ceca278d4e2eec52687e"
+  dependencies:
+    is-fullwidth-code-point "^2.0.0"
+    strip-ansi "^3.0.0"
+
 stringstream@~0.0.4:
   version "0.0.5"
   resolved "https://registry.yarnpkg.com/stringstream/-/stringstream-0.0.5.tgz#4e484cd4de5a0bbbee18e46307710a8a81621878"
@@ -2884,15 +2899,15 @@ supports-color@^3.1.2:
     has-flag "^1.0.0"
 
 table@^3.7.8:
-  version "3.8.0"
-  resolved "https://registry.yarnpkg.com/table/-/table-3.8.0.tgz#252166c7f3286684a9d561b0f3a8929caf3a997b"
+  version "3.8.3"
+  resolved "https://registry.yarnpkg.com/table/-/table-3.8.3.tgz#2bbc542f0fda9861a755d3947fefd8b3f513855f"
   dependencies:
     ajv "^4.7.0"
     ajv-keywords "^1.0.0"
     chalk "^1.1.1"
     lodash "^4.0.0"
     slice-ansi "0.0.4"
-    string-width "^1.0.1"
+    string-width "^2.0.0"
 
 tap-mocha-reporter@^2.0.0:
   version "2.0.1"
