@@ -40,7 +40,7 @@ var appConfig = rc(pkg.name.replace(/[.-]/g, ''), {
 	messages: {
 		metadata: {
 			maxEntries: 10, // no more than 10 metadata records per message
-			maxSize: 10000, // no more than 10k json per metadata record
+			maxSize: 5000, // no more than 5k data per metadata record
 		},
 	},
 });
