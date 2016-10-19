@@ -30,6 +30,9 @@ module.exports = exports = function createUser (req, res, next) {
 		.catch(next);
 };
 
+exports.uri = '/user';
+exports.method = 'post';
+exports.tags = [ 'user' ];
 exports.schema = {
 	body: {
 		username: schemas.username.required(),
@@ -37,4 +40,10 @@ exports.schema = {
 		password: schemas.password.required(),
 		email: schemas.email,
 	},
+	responses: {
+		201: schemas.joi.object().keys({
+			user: schemas.model.user.required(),
+			token: schemas.jwtToken.required(),
+		}),
+	}
 };

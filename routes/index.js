@@ -1,51 +1,46 @@
 
-var config  = require('../config');
-var boom    = require('boom');
-var jwt     = require('express-jwt')(config.jwt);
-var User    = require('../models/user');
+// var config  = require('../config');
+var basic   = require('../middleware/basic-auth');
+var jwt     = require('../middleware/jwt-auth');
 var vc      = require('../middleware/validated-controller');
 
-function requiresAuth (req, res, next) {
-	if (!req.username) {
-		return next(boom.unauthorized('Authentication token is missing or invalid'));
-	}
+var middlewareMap = {
+	requiresUserAuth: require('../middleware/auth-required').user,
+};
 
-	next();
+function addController (path) {
+	var controller = require(path);
+	var { uri, method, middleware } = controller;
+
+	middleware = (middleware || []).map((name) => {
+		if (typeof name === 'function') return name;
+
+		if (typeof name === 'string' && middlewareMap[name]) {
+			return middlewareMap[name];
+		}
+
+		throw new Error('Unknown middleware: ' + name);
+	});
+
+	var args = [ uri ].concat(middleware, [ vc(controller) ]);
+
+	router[method](...args);
 }
 
 var express   = require('express');
 var router    = module.exports = exports = express.Router();
 
-router.get('/authenticate', require('./authenticate'));
+router.use(basic);
+
+addController('./authenticate');
 
 router.use(jwt);
-router.use((req, res, next) => {
-	if (!req.user || !req.user.username) {
-		return next();
-	}
 
-	req.log.debug(req.user, 'Received token for user');
-
-	User.get(req.user.username).then((user) => {
-		if (!user) throw boom.unauthorized('User in authentication token does not exist.');
-		req.log.debug(user, 'Found user');
-		user.token = req.user;
-		req.user = user;
-		req.username = user.username;
-	}).then(next, next);
-});
-
-router.get('/', (req, res) => res.json({
-	name: config.name,
-	version: config.version,
-	auth: req.username || undefined,
-}));
-
-router.get('/user/:username',                      vc(require('./user/get')));
-router.post('/user',                               vc(require('./user/post')));
-router.delete('/user/:username',     requiresAuth, vc(require('./user/delete')));
-
-router.get('/message/:messageid',                  vc(require('./message/get')));
-router.get('/slug/:slug',                          vc(require('./message/slug')));
-router.post('/message',              requiresAuth, vc(require('./message/post')));
-router.delete('/message/:messageid', requiresAuth, vc(require('./message/delete')));
+addController('./root');
+addController('./user/get');
+addController('./user/post');
+addController('./user/delete');
+addController('./message/get');
+addController('./message/slug');
+addController('./message/post');
+addController('./message/delete');

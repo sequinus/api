@@ -32,8 +32,17 @@ module.exports = exports = function deleteMessage (req, res, next) {
 		.catch(next);
 };
 
+exports.uri = '/message/:messageid';
+exports.method = 'delete';
+exports.middleware = [ 'requiresUserAuth' ];
+exports.tags = [ 'message' ];
 exports.schema = {
 	params: {
 		messageid: schemas.messageId,
+	},
+	responses: {
+		202: schemas.joi.object().keys({
+			success: schemas.joi.string().required(),
+		}),
 	},
 };

@@ -20,8 +20,16 @@ module.exports = exports = function getUser (req, res, next) {
 	}).catch(next);
 };
 
+exports.uri = '/user/:username';
+exports.method = 'get';
+exports.tags = [ 'user' ];
 exports.schema = {
 	params: {
 		username: schemas.username,
+	},
+	responses: {
+		200: schemas.joi.object().keys({
+			user: schemas.model.user.required(),
+		}),
 	},
 };

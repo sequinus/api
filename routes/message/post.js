@@ -68,6 +68,10 @@ module.exports = exports = function createMessage (req, res, next) {
 	}).catch(next);
 };
 
+exports.uri = '/message';
+exports.method = 'post';
+exports.middleware = [ 'requiresUserAuth' ];
+exports.tags = [ 'message' ];
 exports.schema = {
 	body: {
 		body: schemas.messageBody.required(),
@@ -75,5 +79,10 @@ exports.schema = {
 		inReplyTo: schemas.messageId,
 		slug: schemas.messageSlug,
 		metadata: joi.array().max(config.messages.metadata.maxEntries).items(schemas.messageMetadata),
+	},
+	responses: {
+		201: schemas.joi.object().keys({
+			message: schemas.model.message,
+		}),
 	},
 };

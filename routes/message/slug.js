@@ -24,7 +24,9 @@ module.exports = exports = function findMessageBySlug (req, res, next) {
 		.catch(next);
 };
 
-
+exports.uri = '/slug/:slug';
+exports.method = 'get';
+exports.tags = [ 'message' ];
 exports.schema = {
 	params: {
 		slug: schemas.messageSlug,

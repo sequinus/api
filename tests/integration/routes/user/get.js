@@ -1,7 +1,7 @@
 process.env.BLUEBIRD_DEBUG = true;
 process.env.BLUEBIRD_LONG_STACK_TRACES = true;
 
-var Promise = require('bluebird');
+// var Promise = require('bluebird');
 require('tapdate')();
 var suite     = require('../../../suite');
 var neo4j   = require('../../../../io/neo4j');

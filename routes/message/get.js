@@ -24,6 +24,9 @@ module.exports = exports = function getMessage (req, res, next) {
 		.catch(next);
 };
 
+exports.uri = '/message/:messageid';
+exports.method = 'get';
+exports.tags = [ 'message' ];
 exports.schema = {
 	params: {
 		messageid: schemas.messageId,
@@ -34,5 +37,10 @@ exports.schema = {
 		maxReplies: joi.number().integer().min(0).max(50).default(10),
 		skipReplies: joi.number().integer().min(0).default(0),
 		sortReplies: joi.string().valid('newest', 'oldest').default('oldest'),
+	},
+	responses: {
+		200: schemas.joi.object().keys({
+			message: schemas.model.message,
+		}),
 	},
 };

@@ -68,7 +68,7 @@ exports.messageMetadata = joi.object().keys({
 		joi.object().jsonMax(config.messages.metadata.maxSize),
 		joi.string().max(config.messages.metadata.maxSize),
 		joi.number()
-	),
+	).required(),
 });
 
 exports.jwtToken       = joi.string().regex(/^[a-zA-Z0-9\-_]+?\.[a-zA-Z0-9\-_]+?\.([a-zA-Z0-9\-_]+)?$/);
@@ -118,6 +118,7 @@ exports.response.error = joi.object().keys({
 			title: joi.string().required(),
 			detail: joi.string().required(),
 			stack: joi.array(),
+			path: joi.string(),
 		})
 	),
 });

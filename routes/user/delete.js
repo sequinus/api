@@ -27,8 +27,17 @@ module.exports = exports = function deleteUser (req, res, next) {
 	}).catch(next);
 };
 
+exports.uri = '/user/:username';
+exports.method = 'delete';
+exports.tags = [ 'user' ];
+exports.middleware = [ 'requiresUserAuth' ];
 exports.schema = {
 	params: {
 		username: schemas.username,
+	},
+	responses: {
+		202: schemas.joi.object().keys({
+			success: schemas.joi.string().required(),
+		}),
 	},
 };
