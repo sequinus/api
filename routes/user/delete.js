@@ -4,7 +4,7 @@ var boom      = require('boom');
 var schemas   = require('../../schemas');
 var User      = require('../../models/user');
 
-module.exports = exports = (req, res, next) => {
+module.exports = exports = function deleteUser (req, res, next) {
 	var username = req.params.username;
 
 	var pUser = User.get(username);

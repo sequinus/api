@@ -6,7 +6,7 @@ var schemas   = require('../../schemas');
 var User      = require('../../models/user');
 var makeToken = require('../../lib/sign-jwt');
 
-module.exports = exports = function postUser (req, res, next) {
+module.exports = exports = function createUser (req, res, next) {
 	var username = req.body.username;
 	var password = req.body.password;
 	var displayname = req.body.displayname;

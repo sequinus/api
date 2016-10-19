@@ -5,7 +5,7 @@ var schemas   = require('../../schemas');
 var Message   = require('../../models/message');
 var URL       = require('url');
 
-module.exports = exports = function getMessageSlug (req, res, next) {
+module.exports = exports = function findMessageBySlug (req, res, next) {
 	var slug = req.params.slug;
 
 	Message.getBySlug(slug)

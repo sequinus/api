@@ -7,7 +7,7 @@ var joi       = schemas.joi;
 var Message   = require('../../models/message');
 var markdown  = require('../../lib/markdown');
 
-module.exports = exports = function postMessage (req, res, next) {
+module.exports = exports = function createMessage (req, res, next) {
 	Promise.join(
 		Promise.resolve(req.body.inReplyTo && Message.getById(req.body.inReplyTo)),
 		Promise.resolve(req.body.slug && Message.getBySlug(req.body.slug)),
