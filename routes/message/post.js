@@ -7,34 +7,26 @@ var joi       = schemas.joi;
 var Message   = require('../../models/message');
 var markdown  = require('../../lib/markdown');
 
-var messagePostSchema = joi.object().keys({
-	body: schemas.messageBody.required(),
-	private: joi.boolean(),
-	inReplyTo: schemas.messageId,
-	slug: schemas.messageSlug,
-	metadata: joi.array().max(config.messages.metadata.maxEntries).items(schemas.messageMetadata),
-});
-
 module.exports = exports = function postMessage (req, res, next) {
-	schemas.validate(req.body, messagePostSchema).then((body) => Promise.join(
-		Promise.resolve(body.inReplyTo && Message.getById(body.inReplyTo)),
-		Promise.resolve(body.slug && Message.getBySlug(body.slug)),
+	Promise.join(
+		Promise.resolve(req.body.inReplyTo && Message.getById(req.body.inReplyTo)),
+		Promise.resolve(req.body.slug && Message.getBySlug(req.body.slug)),
 		(parentMessage, existingSlug) => {
-			if (body.inReplyTo && !parentMessage) {
-				throw boom.badData(`Message ID "${body.inReplyTo}" provided as parent does not exist.`);
+			if (req.body.inReplyTo && !parentMessage) {
+				throw boom.badData(`Message ID "${req.body.inReplyTo}" provided as parent does not exist.`);
 			}
 
 			if (existingSlug) {
-				throw boom.conflict(`A message already exists with the slug of "${body.slug}".`);
+				throw boom.conflict(`A message already exists with the slug of "${req.body.slug}".`);
 			}
 
-			var private = body.private;
+			var private = req.body.private;
 			var hidden;
 			// if a hidden value is defined, use it
-			if (typeof body.hidden !== 'undefined') {
-				hidden = body.hidden;
+			if (typeof req.body.hidden !== 'undefined') {
+				hidden = req.body.hidden;
 			// otherwise, if this is a child post, hidden is the private value
-			} else if (body.inReplyTo) {
+			} else if (req.body.inReplyTo) {
 				hidden = private;
 			// if this is a topic, hidden defaults to false
 			} else {
@@ -42,7 +34,7 @@ module.exports = exports = function postMessage (req, res, next) {
 			}
 
 			// if message is a top level topic, strip out any markdown formatting.
-			var content = body.inReplyTo ? markdown(body.body).trim() : markdown.strip(body.body).trim();
+			var content = req.body.inReplyTo ? markdown(req.body.body).trim() : markdown.strip(req.body.body).trim();
 
 			if (!content) {
 				throw boom.badData('Message body resulted in an empty message.');
@@ -50,19 +42,19 @@ module.exports = exports = function postMessage (req, res, next) {
 
 			var options = {
 				username: req.user.username,
-				body: body.body,
+				body: req.body.body,
 				content,
-				inReplyTo: body.inReplyTo,
+				inReplyTo: req.body.inReplyTo,
 				private,
 				hidden,
-				slug: body.slug,
+				slug: req.body.slug,
 			};
 
 			var pMessage = Message.create(options);
 
-			if (body.metadata) {
+			if (req.body.metadata) {
 				return pMessage.then((message) =>
-					Message.updateMetadata(message.id, body.metadata).then((metadata) => {
+					Message.updateMetadata(message.id, req.body.metadata).then((metadata) => {
 						message.metadata = metadata;
 						return message;
 					}));
@@ -70,8 +62,18 @@ module.exports = exports = function postMessage (req, res, next) {
 
 			return pMessage;
 		}
-	)).then((message) => {
+	).then((message) => {
 		res.status(201);
 		res.json({ message });
 	}).catch(next);
+};
+
+exports.schema = {
+	body: {
+		body: schemas.messageBody.required(),
+		private: joi.boolean(),
+		inReplyTo: schemas.messageId,
+		slug: schemas.messageSlug,
+		metadata: joi.array().max(config.messages.metadata.maxEntries).items(schemas.messageMetadata),
+	},
 };

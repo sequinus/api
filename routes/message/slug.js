@@ -5,12 +5,8 @@ var schemas   = require('../../schemas');
 var Message   = require('../../models/message');
 var URL       = require('url');
 
-module.exports = exports = function postMessage (req, res, next) {
+module.exports = exports = function getMessageSlug (req, res, next) {
 	var slug = req.params.slug;
-
-	if (!schemas.isValid(slug, schemas.messageSlug)) {
-		return next(boom.badRequest(`"${slug}" is not a valid message slug.`));
-	}
 
 	Message.getBySlug(slug)
 		.then((message) => {
@@ -26,4 +22,11 @@ module.exports = exports = function postMessage (req, res, next) {
 			res.redirect(URL.format(oURL));
 		})
 		.catch(next);
+};
+
+
+exports.schema = {
+	params: {
+		slug: schemas.messageSlug,
+	},
 };

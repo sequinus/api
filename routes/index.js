@@ -3,6 +3,7 @@ var config  = require('../config');
 var boom    = require('boom');
 var jwt     = require('express-jwt')(config.jwt);
 var User    = require('../models/user');
+var vc      = require('../middleware/validated-controller');
 
 function requiresAuth (req, res, next) {
 	if (!req.username) {
@@ -40,11 +41,11 @@ router.get('/', (req, res) => res.json({
 	auth: req.username || undefined,
 }));
 
-router.get('/user/:username', require('./user/get'));
-router.post('/user', require('./user/post'));
-router.delete('/user/:username', requiresAuth, require('./user/delete'));
+router.get('/user/:username',                      vc(require('./user/get')));
+router.post('/user',                               vc(require('./user/post')));
+router.delete('/user/:username',     requiresAuth, vc(require('./user/delete')));
 
-router.get('/message/:messageid', require('./message/get'));
-router.get('/slug/:slug', require('./message/slug'));
-router.post('/message', requiresAuth, require('./message/post'));
-router.delete('/message/:messageid', requiresAuth, require('./message/delete'));
+router.get('/message/:messageid',                  vc(require('./message/get')));
+router.get('/slug/:slug',                          vc(require('./message/slug')));
+router.post('/message',              requiresAuth, vc(require('./message/post')));
+router.delete('/message/:messageid', requiresAuth, vc(require('./message/delete')));

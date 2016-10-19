@@ -61,12 +61,12 @@ suite('POST /message', (s) => {
 						{
 							title: 'Request data is missing or in the incorrect format.',
 							detail: '"body" is not allowed to be empty',
-							path: 'body',
+							path: 'body.body',
 						},
 						{
 							title: 'Request data is missing or in the incorrect format.',
 							detail: '"body" length must be at least 1 characters long',
-							path: 'body',
+							path: 'body.body',
 						},
 					],
 				}, 'correct error output');
@@ -91,7 +91,7 @@ suite('POST /message', (s) => {
 						{
 							title: 'Request data is missing or in the incorrect format.',
 							detail: '"body" is required',
-							path: 'body',
+							path: 'body.body',
 						},
 					],
 				}, 'correct error output');

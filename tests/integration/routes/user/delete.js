@@ -70,8 +70,8 @@ suite('DELETE /user', (s) => {
 			User.createWithPassword(USERNAME, PASSWORD),
 			() => User.delete('notme')
 		)
-			.then((deletedUser) => agent
-				.delete('/user/' + deletedUser.username)
+			.then(() => agent
+				.delete('/user/notme')
 				.set('Authorization', `Bearer ${TOKEN}`)
 				.then((res) => {
 					t.equal(res.status, 404, 'http not found');

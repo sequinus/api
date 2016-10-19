@@ -7,7 +7,7 @@ var User      = require('../../models/user');
 module.exports = exports = (req, res, next) => {
 	var username = req.params.username;
 
-	var pUser = schemas.isValid(username, schemas.username) && User.get(username);
+	var pUser = User.get(username);
 
 	Promise.resolve(pUser).then((user) => {
 		if (!user) {
@@ -18,4 +18,10 @@ module.exports = exports = (req, res, next) => {
 			user,
 		});
 	}).catch(next);
+};
+
+exports.schema = {
+	params: {
+		username: schemas.username,
+	},
 };

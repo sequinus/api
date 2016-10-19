@@ -4,7 +4,7 @@ var boom      = require('boom');
 var schemas   = require('../../schemas');
 var Message   = require('../../models/message');
 
-module.exports = exports = function postMessage (req, res, next) {
+module.exports = exports = function deleteMessage (req, res, next) {
 	var messageid = req.params.messageid;
 
 	if (!schemas.isValid(messageid, schemas.messageId)) {
@@ -30,4 +30,10 @@ module.exports = exports = function postMessage (req, res, next) {
 			});
 		})
 		.catch(next);
+};
+
+exports.schema = {
+	params: {
+		messageid: schemas.messageId,
+	},
 };

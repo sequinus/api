@@ -73,19 +73,12 @@ suite('GET /user', (s) => {
 	s.test('404s when a user has been deleted', (t) =>
 		User.createWithPassword(USERNAME, PASSWORD)
 			.then(() => User.delete(USERNAME))
-			.then((deletedUser) => Promise.join(
-				agent.get('/user/' + USERNAME)
-					.then((res) => {
-						t.equal(res.status, 404, 'http not found');
-						return schemas.validate(res.body, ERROR_RESPONSE_SCHEMA);
-					}),
-				agent.get('/user/' + deletedUser.username)
-					.then((res) => {
-						t.equal(res.status, 404, 'http not found');
-						return schemas.validate(res.body, ERROR_RESPONSE_SCHEMA);
-					}),
-				() => null
-			))
+			.then(() => agent.get('/user/' + USERNAME)
+				.then((res) => {
+					t.equal(res.status, 404, 'http not found');
+					return schemas.validate(res.body, ERROR_RESPONSE_SCHEMA);
+				})
+			)
 	);
 
 });
