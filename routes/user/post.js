@@ -44,6 +44,8 @@ exports.schema = {
 		201: schemas.joi.object().keys({
 			user: schemas.model.user.required(),
 			token: schemas.jwtToken.required(),
-		}),
-	}
+		}).meta({ className: 'UserTokenResponse' }),
+
+		409: schemas.response.error.description('Conflict - User already exists'),
+	},
 };

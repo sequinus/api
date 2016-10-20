@@ -202,6 +202,10 @@ utils.getMetaSwaggerType = function (schema) {
 	return utils.getMeta(schema, 'swaggerType');
 };
 
+utils.getMetaSwaggerDefinition = function (schema) {
+	return utils.getMeta(schema, 'swagger');
+};
+
 utils.isSupportedSchema = function (schema) {
 	return !!schema && _.get(schema, '_flags.func') !== true && schema.isJoi === true && (utils.isSupportedType(utils.getPrimitiveType(schema)) || !!utils.getMetaSwaggerType(schema));
 };
@@ -288,6 +292,9 @@ utils.parseBaseModelAttributes = function (schema) {
 	const enumValues = _.get(schema, '_flags.allowOnly') === true ? _.get(schema, '_valids._set') : undefined;
 	const collectionFormat = utils.getMeta(schema, 'collectionFormat');
 
+	let pattern = _.find(schema._tests, { name: 'regex' });
+	pattern = pattern ? pattern.arg.toString() : undefined;
+
 	const baseModel = {
 		required,
 	};
@@ -297,6 +304,7 @@ utils.parseBaseModelAttributes = function (schema) {
 	// TODO: Following working? Not covered by tests!
 	utils.setNotEmpty(baseModel, 'default', defaultValue);
 	utils.setNotEmpty(baseModel, 'format', format);
+	utils.setNotEmpty(baseModel, 'pattern', pattern);
 	utils.setNotEmpty(baseModel, 'enum', enumValues);
 	utils.setNotEmpty(baseModel, 'collectionFormat', collectionFormat);
 	const minValue = utils.findSchemaTest(schema, 'min');
@@ -348,18 +356,27 @@ utils.getFormat = function (schema) {
 		return format;
 	}
 
-	return utils.getPrimitiveType(schema) === 'date' && !utils.getMetaSwaggerType(schema) ? 'date-time' : undefined;
+	if (utils.getPrimitiveType(schema) === 'string') {
+		if (_.find(schema._tests, { name: 'isoDate' })) {
+			return 'datetime';
+		}
+		if (_.find(schema._tests, { name: 'email' })) {
+			return 'email';
+		}
+	}
+
+	return utils.getPrimitiveType(schema) === 'date' ? 'date-time' : undefined;
 };
 
 utils.mapSwaggerType = function (schema, type) {
-	if (!utils.getMetaSwaggerType(schema)) {
-		switch (type) {
-		case 'date':
-			return 'string';
-		default:
-			return type;
-		}
-	} else {
+	if (utils.getMetaSwaggerType(schema)) {
+		return type;
+	}
+
+	switch (type) {
+	case 'date':
+		return 'string';
+	default:
 		return type;
 	}
 };

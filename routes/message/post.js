@@ -37,7 +37,7 @@ module.exports = exports = function createMessage (req, res, next) {
 			var content = req.body.inReplyTo ? markdown(req.body.body).trim() : markdown.strip(req.body.body).trim();
 
 			if (!content) {
-				throw boom.badData('Message body resulted in an empty message.');
+				throw boom.notAcceptable('Message body resulted in an empty message.');
 			}
 
 			var options = {
@@ -78,11 +78,14 @@ exports.schema = {
 		private: joi.boolean(),
 		inReplyTo: schemas.messageId,
 		slug: schemas.messageSlug,
-		metadata: joi.array().max(config.messages.metadata.maxEntries).items(schemas.messageMetadata),
+		metadata: joi.array().max(config.messages.metadata.maxEntries).items(schemas.messageMetadata.meta({ className: 'MessageMetadataInput' })),
 	},
 	responses: {
 		201: schemas.joi.object().keys({
 			message: schemas.model.message,
-		}),
+		}).description('Success').meta({ className: 'MessageResponse' }),
+		406: schemas.response.error.description('Not Acceptable - Body resulted in empty content'),
+		409: schemas.response.error.description('Conflict - Message slug is already in use'),
+		422: schemas.response.error.description('Bad Data - Message parent does not exist'),
 	},
 };

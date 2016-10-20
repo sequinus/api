@@ -41,6 +41,7 @@ exports.schema = {
 	responses: {
 		200: schemas.joi.object().keys({
 			message: schemas.model.message,
-		}),
+		}).meta({ className: 'MessageResponse' }),
+		404: schemas.response.error,
 	},
 };

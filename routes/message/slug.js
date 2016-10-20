@@ -31,4 +31,8 @@ exports.schema = {
 	params: {
 		slug: schemas.messageSlug,
 	},
+	responses: {
+		302: schemas.joi.any().forbidden(),
+		404: schemas.response.error,
+	},
 };

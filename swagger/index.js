@@ -45,10 +45,12 @@ parsePath('../routes/message/slug');
 parsePath('../routes/message/post');
 parsePath('../routes/message/delete');
 
-var errorResponse = {
-	description: 'Error',
-	schema: generator.fromJoiSchema(schemas.response.error, exports.definitions),
-};
+function errorResponse (description) {
+	return {
+		description: description || 'Error',
+		schema: generator.fromJoiSchema(schemas.response.error, exports.definitions),
+	};
+}
 
 function parsePath (controllerPath) {
 	var { name, uri, method, description, tags, middleware, schema } = require(controllerPath);
@@ -66,13 +68,6 @@ function parsePath (controllerPath) {
 	};
 
 	pathEntry[method] = methodEntry;
-
-	if (_.includes(middleware, 'requiresUserAuth')) {
-		methodEntry.security = {
-			'jwt-user': {},
-			'basic-user': {},
-		};
-	}
 
 	if (schema.params) {
 		_.each(schema.params, (jschema, key) => {
@@ -105,12 +100,22 @@ function parsePath (controllerPath) {
 		_.each(schema.responses, (jschema, key) => {
 			var swag = generator.fromJoiSchema(jschema, exports.definitions);
 			methodEntry.responses[key] = {
+				description: jschema._description || undefined,
 				schema: swag,
 			};
 		});
 	}
 
-	methodEntry.responses.default = errorResponse;
+	if (_.includes(middleware, 'requiresUserAuth')) {
+		methodEntry.security = {
+			'jwt-user': {},
+			'basic-user': {},
+		};
+		methodEntry.responses[401] = errorResponse('Unauthorized - Route requires authentication');
+	}
+
+	methodEntry.responses[400] = errorResponse('Bad Request - Some request data failed validation');
+	methodEntry.responses.default = errorResponse();
 };
 
 if (!module.parent) {

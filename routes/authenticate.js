@@ -19,8 +19,10 @@ exports.method = 'get';
 exports.middleware = [ 'requiresUserAuth' ];
 exports.tags = [ 'user' ];
 exports.schema = {
-	response: joi.object().keys({
-		user: schemas.model.user.required(),
-		token: schemas.jwtToken.required(),
-	}),
+	responses: {
+		200: joi.object().keys({
+			user: schemas.model.user.required(),
+			token: schemas.jwtToken.required(),
+		}).meta({ className: 'UserTokenResponse' }),
+	},
 };

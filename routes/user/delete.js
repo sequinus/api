@@ -36,8 +36,8 @@ exports.schema = {
 		username: schemas.username,
 	},
 	responses: {
-		202: schemas.joi.object().keys({
-			success: schemas.joi.string().required(),
-		}),
+		202: schemas.response.success,
+		403: schemas.response.error,
+		404: schemas.response.error,
 	},
 };

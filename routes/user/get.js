@@ -30,6 +30,8 @@ exports.schema = {
 	responses: {
 		200: schemas.joi.object().keys({
 			user: schemas.model.user.required(),
-		}),
+		}).meta({ className: 'UserResponse' }),
+
+		404: schemas.response.error,
 	},
 };

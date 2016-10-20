@@ -43,7 +43,7 @@ generator.newModel = function (schema, definitions) {
 			model.required.push(key);
 		}
 
-		const pick = _.has(value, '$ref') ? [ '$ref' ] : [ 'type', 'format', 'items', 'default', 'description', '$ref', 'enum', 'minimum', 'maximum', 'minLength', 'maxLength', 'collectionFormat' ];
+		const pick = _.has(value, '$ref') ? [ '$ref' ] : [ 'type', 'format', 'items', 'default', 'description', '$ref', 'enum', 'minimum', 'maximum', 'minLength', 'maxLength', 'pattern', 'collectionFormat' ];
 		memo[key] = _.pick(value, pick);
 		return memo;
 	}, model.properties);
@@ -119,6 +119,11 @@ generator.extractAsDefinition = function (schema, definitions, definition) {
 generator.fromJoiSchema = function (schema, definitions) {
 	assert(schema, 'Schema undefined');
 	assert(schema.isJoi, 'Schema is no joi schema');
+
+	let premade;
+	if (premade = utils.getMetaSwaggerDefinition(schema)) {
+		return premade;
+	}
 
 	if (utils.isSupportedSchema(schema)) {
 		const schemaType = utils.getPrimitiveType(schema);

@@ -7,10 +7,6 @@ var Message   = require('../../models/message');
 module.exports = exports = function deleteMessage (req, res, next) {
 	var messageid = req.params.messageid;
 
-	if (!schemas.isValid(messageid, schemas.messageId)) {
-		return next(boom.badRequest(`Message ID "${messageid}" is not a valid message id.`));
-	}
-
 	Message.getById(messageid)
 		.then((message) => {
 			if (!message || message.deleted) {
@@ -41,8 +37,8 @@ exports.schema = {
 		messageid: schemas.messageId,
 	},
 	responses: {
-		202: schemas.joi.object().keys({
-			success: schemas.joi.string().required(),
-		}),
+		202: schemas.response.success,
+		403: schemas.response.error,
+		404: schemas.response.error,
 	},
 };

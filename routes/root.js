@@ -14,9 +14,11 @@ module.exports = exports = function (req, res) {
 exports.uri = '/';
 exports.method = 'get';
 exports.schema = {
-	response: joi.object().keys({
-		name: joi.string().required(),
-		version: joi.string().regex(require('semver-regex')()).required(),
-		auth: schemas.username,
-	}),
+	responses: {
+		200: joi.object().keys({
+			name: joi.string().required(),
+			version: joi.string().regex(require('semver-regex')()).required(),
+			auth: schemas.username,
+		}).meta({ className: 'RootResponse' }).description('Success'),
+	},
 };
