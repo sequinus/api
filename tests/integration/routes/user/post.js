@@ -6,17 +6,12 @@ var suite     = require('../../../suite');
 var neo4j   = require('../../../../io/neo4j');
 var app     = require('../../../../index');
 var agent   = require('supertest-as-promised').agent(app);
-var joi     = require('joi');
 var schemas = require('../../../../schemas');
+var route   = require('../../../../routes/user/post');
 
 require('tapdate')();
 
 var DATE_TOLERANCE = 5;
-var ERROR_RESPONSE_SCHEMA = schemas.response.validationError;
-var VALID_RESPONSE_SCHEMA = joi.object().keys({
-	user: schemas.model.user.required(),
-	token: schemas.jwtToken.required(),
-});
 
 suite('POST /user', (s) => {
 	s.after(() => neo4j.end());
@@ -42,7 +37,7 @@ suite('POST /user', (s) => {
 				t.equal(res.body.user.email, false, 'email was null');
 				t.equal(res.body.user.deleted, false, 'not deleted');
 				t.dateNear(res.body.user.create_time, new Date(), DATE_TOLERANCE, 'create time is current');
-				return schemas.validate(res.body, VALID_RESPONSE_SCHEMA);
+				return schemas.validate(res.body, route.schema.responses[201]);
 			})
 	);
 
@@ -54,7 +49,7 @@ suite('POST /user', (s) => {
 			})
 			.then((res) => {
 				t.equal(res.status, 400, 'http bad request');
-				return schemas.validate(res.body, ERROR_RESPONSE_SCHEMA);
+				return schemas.validate(res.body, schemas.response.validationError);
 			})
 	);
 

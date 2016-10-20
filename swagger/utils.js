@@ -1,5 +1,10 @@
 'use strict';
 
+/**
+ * This code copied from https://github.com/ksmithut/swaggerize-ui which was released
+ * under an MIT license.
+ */
+
 const _ = require('lodash');
 const utils = exports;
 

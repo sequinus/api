@@ -7,14 +7,11 @@ var suite     = require('../../../suite');
 var bootstrap = require('../../../bootstrap');
 var neo4j     = require('../../../../io/neo4j');
 var agent     = bootstrap.agent;
-var joi       = require('joi');
 var schemas   = require('../../../../schemas');
 var Message   = require('../../../../models/message');
+var route     = require('../../../../routes/message/delete');
 
 var DATE_TOLERANCE = 5;
-var VALID_RESPONSE_SCHEMA = joi.object().keys({
-	success: joi.string().required(),
-});
 
 suite('DELETE /message/:messageid', (s) => {
 
@@ -30,7 +27,7 @@ suite('DELETE /message/:messageid', (s) => {
 			.then((res) => {
 				t.equal(res.status, 202, 'http accepted');
 				t.equal(res.body.success, `Message "${message.id}" has been deleted.`, 'success message');
-				return schemas.validate(res.body, VALID_RESPONSE_SCHEMA);
+				return schemas.validate(res.body, route.schema.responses[202]);
 			})
 			.then(() => neo4j.run(
 				'MATCH (message:Message { id: {id} }) OPTIONAL MATCH (message)-[:DELETED_BY]-(mDeletedBy) RETURN message, mDeletedBy',

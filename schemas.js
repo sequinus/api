@@ -85,8 +85,8 @@ exports.messageMetadata = joi.object().keys({
 	value: joi.alternatives(
 		joi.object().jsonMax(config.messages.metadata.maxSize),
 		joi.string().max(config.messages.metadata.maxSize),
-		joi.boolean(),
-		joi.number()
+		joi.number(),
+		joi.boolean()
 	).required().meta({ swaggerType: [ 'string', 'integer', 'boolean' ] })
 	.description('Value may contain any data storable as JSON, but the serialized contents must be less than ' + config.messages.metadata.maxSize + ' bytes'),
 }).meta({ className: 'MessageMetadataInput' });
@@ -133,7 +133,7 @@ exports.response.error = joi.object().keys({
 		joi.object().keys({
 			title: joi.string().required(),
 			detail: joi.string().required(),
-			stack: config.isProd ? joi.array() : null,
+			stack: joi.array(),
 			path: joi.string(),
 		}).meta({ className: 'Error' })
 	),

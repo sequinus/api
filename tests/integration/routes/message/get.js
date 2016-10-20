@@ -7,12 +7,8 @@ var suite     = require('../../../suite');
 var bootstrap = require('../../../bootstrap');
 var neo4j     = require('../../../../io/neo4j');
 var agent     = bootstrap.agent;
-var joi       = require('joi');
 var schemas   = require('../../../../schemas');
-
-var VALID_RESPONSE_SCHEMA = joi.object().keys({
-	message: schemas.model.message,
-});
+var route     = require('../../../../routes/message/get');
 
 suite('GET /message', (s) => {
 
@@ -24,7 +20,7 @@ suite('GET /message', (s) => {
 			.get(`/message/${message.id}`)
 			.then((res) => {
 				t.equal(res.status, 200, 'http ok');
-				return schemas.validate(res.body, VALID_RESPONSE_SCHEMA);
+				return schemas.validate(res.body, route.schema.responses[200]);
 			})
 			.then((body) => {
 				t.equal(body.message.id, message.id, 'got back correct message');
@@ -43,7 +39,7 @@ suite('GET /message', (s) => {
 			})
 			.then((res) => {
 				t.equal(res.status, 200, 'http ok');
-				return schemas.validate(res.body, VALID_RESPONSE_SCHEMA);
+				return schemas.validate(res.body, route.schema.responses[200]);
 			})
 			.then((body) => {
 				t.equal(body.message.id, message.id, 'got back correct message');

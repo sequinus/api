@@ -7,17 +7,11 @@ var suite     = require('../../../suite');
 var neo4j   = require('../../../../io/neo4j');
 var app     = require('../../../../index');
 var agent   = require('supertest-as-promised').agent(app);
-var joi     = require('joi');
 var schemas = require('../../../../schemas');
 var User    = require('../../../../models/user');
+var route   = require('../../../../routes/user/get');
 
 require('tapdate')();
-
-var ERROR_RESPONSE_SCHEMA = schemas.response.error;
-
-var VALID_RESPONSE_SCHEMA = joi.object().keys({
-	user: schemas.model.user.required(),
-});
 
 suite('GET /user', (s) => {
 	s.after(() => neo4j.end());
@@ -41,7 +35,7 @@ suite('GET /user', (s) => {
 					t.equal(res.body.user.email, EMAIL, 'email was correct');
 					t.equal(res.body.user.deleted, false, 'not deleted');
 					t.dateNear(res.body.user.create_time, new Date(), 5, 'create time is current');
-					return schemas.validate(res.body, VALID_RESPONSE_SCHEMA);
+					return schemas.validate(res.body, route.schema.responses[200]);
 				})
 			)
 	);
@@ -57,7 +51,7 @@ suite('GET /user', (s) => {
 					t.equal(res.body.user.email, false, 'email was correct');
 					t.equal(res.body.user.deleted, false, 'not deleted');
 					t.dateNear(res.body.user.create_time, new Date(), 5, 'create time is current');
-					return schemas.validate(res.body, VALID_RESPONSE_SCHEMA);
+					return schemas.validate(res.body, route.schema.responses[200]);
 				})
 			)
 	);
@@ -66,7 +60,7 @@ suite('GET /user', (s) => {
 		agent.get('/user/nobody')
 			.then((res) => {
 				t.equal(res.status, 404, 'http not found');
-				return schemas.validate(res.body, ERROR_RESPONSE_SCHEMA);
+				return schemas.validate(res.body, schemas.response.error);
 			})
 	);
 
@@ -76,7 +70,7 @@ suite('GET /user', (s) => {
 			.then(() => agent.get('/user/' + USERNAME)
 				.then((res) => {
 					t.equal(res.status, 404, 'http not found');
-					return schemas.validate(res.body, ERROR_RESPONSE_SCHEMA);
+					return schemas.validate(res.body, schemas.response.error);
 				})
 			)
 	);

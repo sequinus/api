@@ -7,13 +7,10 @@ var suite     = require('../../../suite');
 var bootstrap = require('../../../bootstrap');
 var neo4j     = require('../../../../io/neo4j');
 var agent     = bootstrap.agent;
-var joi       = require('joi');
 var schemas   = require('../../../../schemas');
+var route     = require('../../../../routes/message/post');
 
 var DATE_TOLERANCE = 5;
-var VALID_RESPONSE_SCHEMA = joi.object().keys({
-	message: schemas.model.message,
-});
 
 suite('POST /message', (s) => {
 
@@ -29,7 +26,7 @@ suite('POST /message', (s) => {
 			})
 			.then((res) => {
 				t.equal(res.status, 201, 'http created');
-				return schemas.validate(res.body, VALID_RESPONSE_SCHEMA);
+				return schemas.validate(res.body, route.schema.responses[201]);
 			})
 			.then(() => neo4j.run('MATCH (m:Message)-[r]->(u:User) RETURN *'))
 			.then((results) => {
@@ -116,7 +113,7 @@ suite('POST /message', (s) => {
 			})
 			.then((res) => {
 				t.equal(res.status, 201, 'http created');
-				return schemas.validate(res.body, VALID_RESPONSE_SCHEMA);
+				return schemas.validate(res.body, route.schema.responses[201]);
 			})
 			.then(() => neo4j.run('MATCH (m:Message)-[r]->(t:Message), (m)-[c]->(u:User) RETURN m, r, t, c, u'))
 			.then((results) => {
@@ -149,7 +146,7 @@ suite('POST /message', (s) => {
 			})
 			.then((res) => {
 				t.equal(res.status, 201, 'http created');
-				return schemas.validate(res.body, VALID_RESPONSE_SCHEMA);
+				return schemas.validate(res.body, route.schema.responses[201]);
 			})
 			.then(() => neo4j.run('MATCH (t:Message)<--(p:Message)<-[r]-(m:Message), (m)-[c]->(u:User) RETURN m, r, p, c, u'))
 			.then((results) => {
@@ -185,7 +182,7 @@ suite('POST /message', (s) => {
 			})
 			.then((res) => {
 				t.equal(res.status, 201, 'http created');
-				return schemas.validate(res.body, VALID_RESPONSE_SCHEMA);
+				return schemas.validate(res.body, route.schema.responses[201]);
 			})
 			.then(() => neo4j.run('MATCH (m:Message)<-[r:METADATA_FOR]-(md:Metadata) RETURN md ORDER BY md.index'))
 			.then((results) => {

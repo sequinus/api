@@ -7,16 +7,12 @@ var suite     = require('../../../suite');
 var neo4j     = require('../../../../io/neo4j');
 var app       = require('../../../../index');
 var agent     = require('supertest-as-promised').agent(app);
-var joi       = require('joi');
 var schemas   = require('../../../../schemas');
 var User      = require('../../../../models/user');
 var makeToken = require('../../../../lib/sign-jwt');
-
+var route   = require('../../../../routes/user/delete');
 
 var DATE_TOLERANCE = 5;
-var VALID_RESPONSE_SCHEMA = joi.object().keys({
-	success: joi.string().required(),
-});
 
 suite('DELETE /user', (s) => {
 	var USERNAME = 'testuser';
@@ -38,7 +34,7 @@ suite('DELETE /user', (s) => {
 				.then((res) => {
 					t.equal(res.status, 202, 'http accepted');
 					t.equal(res.body.success, `User "${USERNAME}" has been deleted.`);
-					return schemas.validate(res.body, VALID_RESPONSE_SCHEMA);
+					return schemas.validate(res.body, route.schema.responses[202]);
 				})
 			)
 			.then(() => neo4j.run('MATCH (u) OPTIONAL MATCH (u)-[r]-(p) RETURN *'))
