@@ -7,7 +7,7 @@ if (!config.isProd) {
 	process.env.BLUEBIRD_LONG_STACK_TRACES = true;
 }
 
-if (config.newrelic) {
+if (config.newrelic || process.env.NEW_RELIC_LICENSE_KEY) {
 	process.env.NEW_RELIC_LICENSE_KEY    = process.env.NEW_RELIC_LICENSE_KEY    || config.newrelic.license;
 	process.env.NEW_RELIC_APP_NAME       = process.env.NEW_RELIC_APP_NAME       || config.newrelic.appName;
 	process.env.NEW_RELIC_LOG_LEVEL      = process.env.NEW_RELIC_LOG_LEVEL      || 'info';
