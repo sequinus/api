@@ -34,12 +34,12 @@ exports.uri = '/user';
 exports.method = 'post';
 exports.tags = [ 'user' ];
 exports.schema = {
-	body: {
+	body: schemas.joi.object().keys({
 		username: schemas.username.required(),
 		displayname: schemas.displayname,
 		password: schemas.password.required(),
 		email: schemas.email,
-	},
+	}),
 	responses: {
 		201: schemas.joi.object().keys({
 			user: schemas.model.user.required(),

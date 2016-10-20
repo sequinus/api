@@ -73,13 +73,13 @@ exports.method = 'post';
 exports.middleware = [ 'requiresUserAuth' ];
 exports.tags = [ 'message' ];
 exports.schema = {
-	body: {
+	body: schemas.joi.object().keys({
 		body: schemas.messageBody.required(),
 		private: joi.boolean(),
 		inReplyTo: schemas.messageId,
 		slug: schemas.messageSlug,
 		metadata: joi.array().max(config.messages.metadata.maxEntries).items(schemas.messageMetadata.meta({ className: 'MessageMetadataInput' })),
-	},
+	}),
 	responses: {
 		201: schemas.joi.object().keys({
 			message: schemas.model.message,

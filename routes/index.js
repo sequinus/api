@@ -3,6 +3,7 @@
 var basic   = require('../middleware/basic-auth');
 var jwt     = require('../middleware/jwt-auth');
 var vc      = require('../middleware/validated-controller');
+var swagui  = require('../middleware/swagger');
 
 var middlewareMap = {
 	requiresUserAuth: require('../middleware/auth-required').user,
@@ -29,6 +30,12 @@ function addController (path) {
 
 var express   = require('express');
 var router    = module.exports = exports = express.Router();
+
+router.use('/api-docs', (req, res) => {
+	res.json(require('../swagger'));
+});
+
+router.use('/docs', swagui);
 
 router.use(basic);
 

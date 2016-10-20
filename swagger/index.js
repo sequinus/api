@@ -4,9 +4,10 @@ var _ = require('lodash');
 var pkg = require('../package.json');
 var generator = require('./generator');
 var schemas = require('../schemas');
+var statusCodes = require('statuses/codes.json');
 
 module.exports = exports = {
-	swagger: '3.0',
+	swagger: '2.0',
 	info: {
 		description: 'Sequinus API',
 		title: pkg.name,
@@ -15,23 +16,19 @@ module.exports = exports = {
 	produces: [ 'application/json' ],
 	consumes: [ 'application/json' ],
 	schemes:  [ 'http' ],
-	securityDefinitions: {
-		'jwt-user': {
-			type: 'http',
-			scheme: 'bearer',
-			bearerFormat: 'JWT',
-		},
-		'basic-user': {
-			type: 'http',
-			scheme: 'basic',
-		},
-	},
 	tags: [
 		{ name: 'user', description: 'Sequinus User Accounts' },
 		{ name: 'message', description: 'Sequinus Messages' },
 	],
 	paths: {},
-	parameters: {},
+	parameters: {
+		'UserAuthentication': {
+			name: 'Authorization',
+			in: 'header',
+			description: 'This route requires a user login either via HTTP Basic Authorization or a JWT Authorization Bearer token.',
+			type: 'string',
+		},
+	},
 	definitions: {},
 };
 
@@ -48,7 +45,7 @@ parsePath('../routes/message/delete');
 function errorResponse (description) {
 	return {
 		description: description || 'Error',
-		schema: generator.fromJoiSchema(schemas.response.error, exports.definitions),
+		schema: { $ref: generator.fromJoiSchema(schemas.response.error, exports.definitions).$ref },
 	};
 }
 
@@ -71,7 +68,8 @@ function parsePath (controllerPath) {
 
 	if (schema.params) {
 		_.each(schema.params, (jschema, key) => {
-			var swag = generator.fromJoiSchema(jschema, {});
+			var swag = generator.fromJoiSchema(jschema.required(), {});
+			swag.required = true;
 			swag.name = key;
 			swag.in = 'path';
 			methodEntry.parameters.push(swag);
@@ -88,29 +86,34 @@ function parsePath (controllerPath) {
 	}
 
 	if (schema.body) {
-		_.each(schema.body, (jschema, key) => {
-			var swag = generator.fromJoiSchema(jschema, exports.definitions);
-			swag.name = key;
-			swag.in = 'formData';
-			methodEntry.parameters.push(swag);
+		var swagBody = generator.fromJoiSchema(schema.body, exports.definitions);
+		methodEntry.parameters.push({
+			name: 'body',
+			in: 'body',
+			schema: { $ref: swagBody.$ref },
 		});
 	}
 
 	if (schema.responses) {
 		_.each(schema.responses, (jschema, key) => {
-			var swag = generator.fromJoiSchema(jschema, exports.definitions);
-			methodEntry.responses[key] = {
-				description: jschema._description || undefined,
-				schema: swag,
-			};
+
+			if (Number(key) >= 300 && Number(key) < 400) {
+				methodEntry.responses[key] = {
+					description: 'Redirect',
+					headers: { Location: { type: 'string' } },
+				};
+			} else {
+				var swag = generator.fromJoiSchema(jschema, exports.definitions);
+				methodEntry.responses[key] = {
+					description: jschema._description || statusCodes[key] || 'Unknown',
+					schema: { $ref: swag.$ref },
+				};
+			}
 		});
 	}
 
 	if (_.includes(middleware, 'requiresUserAuth')) {
-		methodEntry.security = {
-			'jwt-user': {},
-			'basic-user': {},
-		};
+		methodEntry.parameters.push({ '$ref': '#/parameters/UserAuthentication' });
 		methodEntry.responses[401] = errorResponse('Unauthorized - Route requires authentication');
 	}
 

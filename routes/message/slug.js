@@ -29,7 +29,7 @@ exports.method = 'get';
 exports.tags = [ 'message' ];
 exports.schema = {
 	params: {
-		slug: schemas.messageSlug,
+		slug: schemas.messageSlug.required(),
 	},
 	responses: {
 		302: schemas.joi.any().forbidden(),

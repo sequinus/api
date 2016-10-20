@@ -133,7 +133,7 @@ exports.response.error = joi.object().keys({
 		joi.object().keys({
 			title: joi.string().required(),
 			detail: joi.string().required(),
-			stack: joi.array(),
+			stack: config.isProd ? joi.array() : null,
 			path: joi.string(),
 		}).meta({ className: 'Error' })
 	),
