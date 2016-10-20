@@ -71,7 +71,7 @@ generator.newArray = function (schema, definitions, arrayModel) {
 	if (firstInclusionType) {
 		const firstInclusionTypeModel = generator.fromJoiSchema(firstInclusionType, definitions);
 		if (!firstInclusionTypeModel) {
-			console.log('Cannot use: ', firstInclusionType);
+			console.error('Cannot use: ', firstInclusionType); // eslint-disable-line no-console
 		} else if (firstInclusionTypeModel.$ref) {
 			arrayModel.items = _.pick(firstInclusionTypeModel, [ '$ref' ]);
 		} else {
