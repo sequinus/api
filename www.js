@@ -7,6 +7,18 @@ if (!config.isProd) {
 	process.env.BLUEBIRD_LONG_STACK_TRACES = true;
 }
 
+if (config.newrelic) {
+	process.env.NEW_RELIC_LICENSE_KEY    = process.env.NEW_RELIC_LICENSE_KEY    || config.newrelic.license;
+	process.env.NEW_RELIC_APP_NAME       = process.env.NEW_RELIC_APP_NAME       || config.newrelic.appName;
+	process.env.NEW_RELIC_LOG_LEVEL      = process.env.NEW_RELIC_LOG_LEVEL      || 'info';
+	process.env.NEW_RELIC_NO_CONFIG_FILE = process.env.NEW_RELIC_NO_CONFIG_FILE || true;
+	process.env.NEW_RELIC_LOG            = process.env.NEW_RELIC_LOG            || 'stdout';
+} else {
+	process.env.NEW_RELIC_ENABLED = 'false';
+}
+
+require('newrelic');
+
 var log     = require('./log')('www');
 var app     = require('./index');
 
