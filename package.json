@@ -19,7 +19,7 @@
   "license": "BSD-3-Clause",
   "dependencies": {
     "basic-auth": "~1.0.4",
-    "bcrypt": "~0.8.7",
+    "bcrypt": "~2.0.1",
     "bluebird": "~3.4.6",
     "body-parser": "~1.15.2",
     "boom": "~4.2.0",
