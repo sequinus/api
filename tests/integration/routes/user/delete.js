@@ -3,7 +3,7 @@ process.env.BLUEBIRD_LONG_STACK_TRACES = true;
 
 var Promise   = require('bluebird');
 require('tapdate')();
-var suite     = require('../../../suite');
+var suite     = require('tapsuite');
 var neo4j     = require('../../../../io/neo4j');
 var app       = require('../../../../index');
 var agent     = require('supertest-as-promised').agent(app);

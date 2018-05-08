@@ -134,7 +134,7 @@ exports.response.error = joi.object().keys({
 			title: joi.string().required(),
 			detail: joi.string().required(),
 			stack: joi.array(),
-			path: joi.string(),
+			path: joi.array().items(joi.string()),
 		}).meta({ className: 'Error' })
 	),
 }).meta({ className: 'ErrorResponse' }).description('Error');
@@ -144,7 +144,7 @@ exports.response.validationError = joi.object().keys({
 		joi.object().keys({
 			title: joi.string().required(),
 			detail: joi.string().required(),
-			path: joi.string(),
+			path: joi.array().items(joi.string()),
 		}).meta({ className: 'ValidationError' })
 	),
 }).meta({ className: 'ValidationErrorResponse' }).description('Invalid Request Data');
