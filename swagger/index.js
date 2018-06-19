@@ -2,34 +2,54 @@
 
 var _ = require('lodash');
 var pkg = require('../package.json');
-var generator = require('./generator');
 var schemas = require('../schemas');
 var statusCodes = require('statuses/codes.json');
 
+var joi2swag = require('joi-to-swagger');
+
+var rawComponents = {};
+
+function fromJoiSchema (schema) {
+	var result = joi2swag(schema, rawComponents);
+	if (result.components) {
+		_.merge(rawComponents, result.components);
+		if (result.components.schemas) {
+			_.assign(exports.components.schemas, result.components.schemas);
+		}
+		if (result.components.requestBodies) {
+			_.each(result.components.requestBodies, (def, key) => {
+				exports.components.requestBodies[key] = { content: { 'application/json': { schema: def } } };
+			});
+		}
+	}
+	return result.swagger;
+}
+
 module.exports = exports = {
-	swagger: '2.0',
+	openapi: '3.0.0',
+	servers: [],
 	info: {
 		description: 'Sequinus API',
 		title: pkg.name,
 		version: pkg.version,
 	},
-	produces: [ 'application/json' ],
-	consumes: [ 'application/json' ],
-	schemes:  [ 'http' ],
 	tags: [
 		{ name: 'user', description: 'Sequinus User Accounts' },
 		{ name: 'message', description: 'Sequinus Messages' },
 	],
 	paths: {},
-	parameters: {
-		'UserAuthentication': {
-			name: 'Authorization',
-			in: 'header',
-			description: 'This route requires a user login either via HTTP Basic Authorization or a JWT Authorization Bearer token.',
-			type: 'string',
+	components: {
+		parameters: {
+			'UserAuthentication': {
+				name: 'Authorization',
+				in: 'header',
+				description: 'This route requires a user login either via HTTP Basic Authorization or a JWT Authorization Bearer token.',
+				schema: { type: 'string' },
+			},
 		},
+		requestBodies: {},
+		schemas: {},
 	},
-	definitions: {},
 };
 
 parsePath('../routes/authenticate');
@@ -45,9 +65,14 @@ parsePath('../routes/message/delete');
 function errorResponse (description) {
 	return {
 		description: description || 'Error',
-		schema: { $ref: generator.fromJoiSchema(schemas.response.error, exports.definitions).$ref },
+		content: {
+			'application/json': {
+				schema: { $ref: fromJoiSchema(schemas.response.error).$ref },
+			},
+		},
 	};
 }
+
 
 function parsePath (controllerPath) {
 	var { name, uri, method, description, tags, middleware, schema } = require(controllerPath);
@@ -68,30 +93,32 @@ function parsePath (controllerPath) {
 
 	if (schema.params) {
 		_.each(schema.params, (jschema, key) => {
-			var swag = generator.fromJoiSchema(jschema.required(), {});
-			swag.required = true;
-			swag.name = key;
-			swag.in = 'path';
-			methodEntry.parameters.push(swag);
+			var swag = fromJoiSchema(jschema.required().meta({ className: null }));
+			var param = {
+				required: true,
+				name: key,
+				in: 'path',
+				schema: swag,
+			};
+			methodEntry.parameters.push(param);
 		});
 	}
 
 	if (schema.query) {
 		_.each(schema.query, (jschema, key) => {
-			var swag = generator.fromJoiSchema(jschema, {});
-			swag.name = key;
-			swag.in = 'query';
-			methodEntry.parameters.push(swag);
+			var swag = fromJoiSchema(jschema);
+			var param = {
+				name: key,
+				in: 'query',
+				schema: swag,
+			};
+			methodEntry.parameters.push(param);
 		});
 	}
 
 	if (schema.body) {
-		var swagBody = generator.fromJoiSchema(schema.body, exports.definitions);
-		methodEntry.parameters.push({
-			name: 'body',
-			in: 'body',
-			schema: { $ref: swagBody.$ref },
-		});
+		var result = fromJoiSchema(schema.body);
+		methodEntry.requestBody = { $ref: result.$ref.replace('schemas', 'requestBodies') };
 	}
 
 	if (schema.responses) {
@@ -100,20 +127,24 @@ function parsePath (controllerPath) {
 			if (Number(key) >= 300 && Number(key) < 400) {
 				methodEntry.responses[key] = {
 					description: 'Redirect',
-					headers: { Location: { type: 'string' } },
+					headers: { Location: { schema: { type: 'string' } } },
 				};
 			} else {
-				var swag = generator.fromJoiSchema(jschema, exports.definitions);
+				var swag = fromJoiSchema(jschema);
 				methodEntry.responses[key] = {
 					description: jschema._description || statusCodes[key] || 'Unknown',
-					schema: { $ref: swag.$ref },
+					content: {
+						'application/json': {
+							schema: swag,
+						},
+					},
 				};
 			}
 		});
 	}
 
 	if (_.includes(middleware, 'requiresUserAuth')) {
-		methodEntry.parameters.push({ '$ref': '#/parameters/UserAuthentication' });
+		methodEntry.parameters.push({ '$ref': '#/components/parameters/UserAuthentication' });
 		methodEntry.responses[401] = errorResponse('Unauthorized - Route requires authentication');
 	}
 

@@ -79,7 +79,7 @@ exports.schema = {
 		inReplyTo: schemas.messageId,
 		slug: schemas.messageSlug,
 		metadata: joi.array().max(config.messages.metadata.maxEntries).items(schemas.messageMetadata.meta({ className: 'MessageMetadataInput' })),
-	}),
+	}).meta({ className: 'CreateMessageBody', classTarget: 'requestBodies' }),
 	responses: {
 		201: schemas.joi.object().keys({
 			message: schemas.model.message,

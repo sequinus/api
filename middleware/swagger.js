@@ -1,10 +1,9 @@
 
-var path    = require('path');
 var URL       = require('url');
 var express   = require('express');
 var router    = module.exports = exports = express.Router();
 
-var SWAGGER_PATH = path.dirname(require.resolve('swagger-ui'));
+var SWAGGER_PATH = require('swagger-ui-dist').absolutePath();
 
 router.use((req, res, next) => {
 	if (!req.query.url) {

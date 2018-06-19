@@ -39,7 +39,7 @@ exports.schema = {
 		displayname: schemas.displayname,
 		password: schemas.password.required(),
 		email: schemas.email,
-	}),
+	}).meta({ className: 'CreateUserBody', classTarget: 'requestBodies' }),
 	responses: {
 		201: schemas.joi.object().keys({
 			user: schemas.model.user.required(),

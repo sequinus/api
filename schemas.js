@@ -72,8 +72,8 @@ exports.usernameDeletable = exports.username
 
 exports.displayname     = joi.string().trim().min(1, 'utf8').max(100, 'utf8');
 exports.password        = joi.string().min(8);
-exports.email           = joi.string().trim().email().allow(false).default(false).meta({ swagger: { type: [ 'string', 'boolean' ], default: false, format: 'email' } });
-exports.deleted         = joi.string().isoDate().allow(false).meta({ swagger: { type: [ 'string', 'boolean' ], default: false, format: 'datetime' } });
+exports.email           = joi.string().trim().email().allow(false).default(false).meta({ swaggerOverride: true, swagger: { format: 'email', default: false, oneOf: [ { type: 'string' }, { type: 'boolean' } ] } });
+exports.deleted         = joi.string().isoDate().allow(false).meta({ swaggerOverride: true, swagger: { format: 'datetime', default: false, oneOf: [ { type: 'string' }, { type: 'boolean' } ] } });
 exports.create_time     = joi.string().isoDate();
 
 exports.messageId       = joi.string().alphanum().length(10);
@@ -82,13 +82,16 @@ exports.messageContent  = joi.string().trim().min(1, 'utf8');
 exports.messageSlug     = joi.string().trim().min(1, 'utf8').max(100, 'utf8').regex(/^[a-zA-Z0-9_-]+$/);
 exports.messageMetadata = joi.object().keys({
 	type: joi.string().alphanum().min(2).required(),
-	value: joi.alternatives(
-		joi.object().jsonMax(config.messages.metadata.maxSize),
-		joi.string().max(config.messages.metadata.maxSize),
-		joi.number(),
-		joi.boolean()
-	).required().meta({ swaggerType: [ 'string', 'integer', 'boolean' ] })
-	.description('Value may contain any data storable as JSON, but the serialized contents must be less than ' + config.messages.metadata.maxSize + ' bytes'),
+	value: joi
+		.alternatives(
+			joi.object().jsonMax(config.messages.metadata.maxSize),
+			joi.string().max(config.messages.metadata.maxSize),
+			joi.number(),
+			joi.boolean()
+		)
+		.required()
+		.meta({ swaggerType: [ 'string', 'integer', 'boolean' ] })
+		.description('Value may contain any data storable as JSON, but the serialized contents must be less than ' + config.messages.metadata.maxSize + ' bytes'),
 }).meta({ className: 'MessageMetadataInput' });
 
 exports.jwtToken       = joi.string().regex(/^[a-zA-Z0-9\-_]+?\.[a-zA-Z0-9\-_]+?\.([a-zA-Z0-9\-_]+)?$/);
@@ -117,9 +120,9 @@ exports.model.message = joi.object().keys({
 	update_time: exports.create_time.required(), // not a typo, update_time is same as create_time
 	create_time: exports.create_time.required(),
 	author: exports.usernameDeletable.required(),
-	parent: joi.lazy(() => exports.model.message).meta({ swagger: { '$ref': '#/definitions/MessageModel' } }),
+	parent: joi.lazy(() => exports.model.message).meta({ swaggerOverride: true, swagger: { '$ref': '#/components/schemas/MessageModel' } }),
 	level: joi.number().integer().min(0),
-	replies: joi.array().items(joi.lazy(() => exports.model.message)).meta({ swagger: { '$ref': '#/definitions/MessageModel' } }),
+	replies: joi.array().items(joi.lazy(() => exports.model.message)).meta({ swaggerOverride: true, swagger: { '$ref': '#/components/schemas/MessageModel' } }),
 	replyCount: joi.number().integer().min(0),
 	metadata: joi.array().max(config.messages.metadata.maxEntries).items(exports.messageMetadata.keys({
 		create_time: exports.create_time.required(),
@@ -133,7 +136,7 @@ exports.response.error = joi.object().keys({
 		joi.object().keys({
 			title: joi.string().required(),
 			detail: joi.string().required(),
-			stack: joi.array(),
+			stack: joi.array().items(joi.string()),
 			path: joi.array().items(joi.string()),
 		}).meta({ className: 'Error' })
 	),
