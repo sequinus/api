@@ -95,7 +95,7 @@ suite('DELETE /user', (s) => {
 					t.equal(res.status, 403, 'http unauthorized');
 					return schemas.validate(res.body, schemas.response.error);
 				})
-			)
-		);
+		)
+	);
 
 });

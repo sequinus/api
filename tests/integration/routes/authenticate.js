@@ -101,6 +101,6 @@ suite('GET /', (s) => {
 					return schemas.validate(res.body, rootRoute.schema.responses[200]);
 				})
 			)
-		);
+	);
 
 });
